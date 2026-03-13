@@ -4,32 +4,27 @@ import { v1_base_url } from "../utils/base_v1.js";
 
 async function extractEpisodesList(id) {
   try {
-    // Get actual anime ID from watch page
-    const watchResponse = await axios.get(`https://${v1_base_url}/watch/${id}`, {
-      headers: {
-        "X-Requested-With": "XMLHttpRequest",
-      },
-    });
-    const $watch = cheerio.load(watchResponse.data);
-    const showId = $watch('[data-id]').first().attr('data-id') || id.split("-").pop();
+    // Get episode list from watch page HTML
+    const watchResponse = await axios.get(`https://${v1_base_url}/watch/${id}`);
+    const $ = cheerio.load(watchResponse.data);
     
-    const response = await axios.get(
-      `https://${v1_base_url}/ajax/v2/episode/list/${showId}`,
-      {
-        headers: {
-          "X-Requested-With": "XMLHttpRequest",
-          Referer: `https://${v1_base_url}/watch/${id}`,
-        },
-      }
-    );
-    if (!response.data.html) return [];
-    const $ = cheerio.load(response.data.html);
     const res = {
       totalEpisodes: 0,
       episodes: [],
     };
-    res.totalEpisodes = Number($(".detail-infor-content .ss-list a").length);
-    $(".detail-infor-content .ss-list a").each((_, el) => {
+    
+    // Try multiple selectors for episode list
+    let episodeElements = $(".detail-infor-content .ss-list a");
+    if (episodeElements.length === 0) {
+      episodeElements = $(".ss-list a");
+    }
+    if (episodeElements.length === 0) {
+      episodeElements = $(".episodes-list a");
+    }
+    
+    res.totalEpisodes = episodeElements.length;
+    
+    episodeElements.each((_, el) => {
       res.episodes.push({
         episode_no: Number($(el).attr("data-number")),
         id: $(el)?.attr("href")?.split("/")?.pop() || null,
