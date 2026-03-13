@@ -4,7 +4,15 @@ import { v1_base_url } from "../utils/base_v1.js";
 
 async function extractEpisodesList(id) {
   try {
-    const showId = id.split("-").pop();
+    // Get actual anime ID from watch page
+    const watchResponse = await axios.get(`https://${v1_base_url}/watch/${id}`, {
+      headers: {
+        "X-Requested-With": "XMLHttpRequest",
+      },
+    });
+    const $watch = cheerio.load(watchResponse.data);
+    const showId = $watch('[data-id]').first().attr('data-id') || id.split("-").pop();
+    
     const response = await axios.get(
       `https://${v1_base_url}/ajax/v2/episode/list/${showId}`,
       {
