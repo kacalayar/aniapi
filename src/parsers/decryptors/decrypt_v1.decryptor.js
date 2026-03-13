@@ -103,16 +103,16 @@ export async function decryptSources_v1(epID, id, name, type, fallback, baseUrl 
       if (!sourceId) throw new Error("Unable to extract sourceId from link");
 
       // Extract the base path from the embed link (e.g. https://rapid-cloud.co/embed-2/v2/e-1)
-      const baseUrlMatch = ajaxLink.match(
+      const embedBaseMatch = ajaxLink.match(
         /^(https?:\/\/[^\/]+(?:\/[^\/]+){3})/,
       );
-      if (!baseUrlMatch) throw new Error("Could not extract base URL");
-      const baseUrl = baseUrlMatch[1];
+      if (!embedBaseMatch) throw new Error("Could not extract base URL");
+      const embedBase = embedBaseMatch[1];
 
-      iframeURL = `${baseUrl}/${sourceId}?k=1&autoPlay=0&oa=0&asi=1`;
+      iframeURL = `${embedBase}/${sourceId}?k=1&autoPlay=0&oa=0&asi=1`;
 
       const { data: rawSourceData } = await axios.get(
-        `${baseUrl}/getSources?id=${sourceId}`,
+        `${embedBase}/getSources?id=${sourceId}`,
         {
           headers: {
             "X-Requested-With": "XMLHttpRequest",
