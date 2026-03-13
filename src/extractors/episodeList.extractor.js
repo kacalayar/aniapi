@@ -18,6 +18,7 @@ async function extractEpisodesList(id) {
           },
         }
       );
+      if (!response.data?.html) throw new Error("No HTML in response");
     } catch (e) {
       // Fallback to v2 endpoint
       response = await axios.get(
