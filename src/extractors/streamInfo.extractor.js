@@ -7,58 +7,24 @@ import { decryptSources_v1 } from "../parsers/decryptors/decrypt_v1.decryptor.js
 
 export async function extractServers(id) {
   try {
-    // Try kaido.to style endpoint first (without v2)
-    let resp;
-    try {
-      resp = await axios.get(
-        `https://${v1_base_url}/ajax/episode/servers?episodeId=${id}`,
-        {
-          headers: {
-            "X-Requested-With": "XMLHttpRequest",
-            "Referer": `https://${v1_base_url}/`,
-          },
-        }
-      );
-      if (!resp.data?.html) throw new Error("No HTML in response");
-    } catch (e) {
-      // Fallback to v2 endpoint
-      resp = await axios.get(
-        `https://${v1_base_url}/ajax/v2/episode/servers?episodeId=${id}`,
-        {
-          headers: {
-            "X-Requested-With": "XMLHttpRequest",
-            "Referer": `https://${v1_base_url}/`,
-          },
-        }
-      );
-    }
-    
+    const resp = await axios.get(
+      `https://${v1_base_url}/ajax/v2/episode/servers?episodeId=${id}`
+    );
     const $ = cheerio.load(resp.data.html);
     const serverData = [];
-    
-    // Try multiple selectors for server items
-    let serverItems = $(".server-item");
-    if (serverItems.length === 0) {
-      serverItems = $(".servers-sub .btn-play, .servers-dub .btn-play, .servers-raw .btn-play");
-    }
-    
-    serverItems.each((index, element) => {
-      const data_id = $(element).attr("data-id") || $(element).attr("data-link-id");
-      const server_id = $(element).attr("data-server-id") || $(element).attr("data-sv-id");
-      const type = $(element).attr("data-type") || 
-                   ($(element).closest(".servers-sub").length ? "sub" : 
-                    $(element).closest(".servers-dub").length ? "dub" : "raw");
+    $(".server-item").each((index, element) => {
+      const data_id = $(element).attr("data-id");
+      const server_id = $(element).attr("data-server-id");
+      const type = $(element).attr("data-type");
 
-      const serverName = $(element).find("a").text().trim() || $(element).text().trim();
-      if (data_id) {
-        serverData.push({
-          type,
-          data_id,
-          server_id,
-          serverName,
-        });
-      }
+      const serverName = $(element).find("a").text().trim();
+      serverData.push({
+        type,
+        data_id,
+        server_id,
+        serverName,
       });
+    });
     return serverData;
   } catch (error) {
     console.log(error);

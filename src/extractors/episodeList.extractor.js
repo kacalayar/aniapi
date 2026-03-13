@@ -5,41 +5,21 @@ import { v1_base_url } from "../utils/base_v1.js";
 async function extractEpisodesList(id) {
   try {
     const showId = id.split("-").pop();
-    
-    // Try kaido.to style endpoint first (without v2)
-    let response;
-    try {
-      response = await axios.get(
-        `https://${v1_base_url}/ajax/episode/list/${showId}`,
-        {
-          headers: {
-            "X-Requested-With": "XMLHttpRequest",
-            Referer: `https://${v1_base_url}/watch/${id}`,
-          },
-        }
-      );
-      if (!response.data?.html) throw new Error("No HTML in response");
-    } catch (e) {
-      // Fallback to v2 endpoint
-      response = await axios.get(
-        `https://${v1_base_url}/ajax/v2/episode/list/${showId}`,
-        {
-          headers: {
-            "X-Requested-With": "XMLHttpRequest",
-            Referer: `https://${v1_base_url}/watch/${id}`,
-          },
-        }
-      );
-    }
-    
+    const response = await axios.get(
+      `https://${v1_base_url}/ajax/v2/episode/list/${showId}`,
+      {
+        headers: {
+          "X-Requested-With": "XMLHttpRequest",
+          Referer: `https://${v1_base_url}/watch/${id}`,
+        },
+      }
+    );
     if (!response.data.html) return [];
     const $ = cheerio.load(response.data.html);
-    
     const res = {
       totalEpisodes: 0,
       episodes: [],
     };
-    
     res.totalEpisodes = Number($(".detail-infor-content .ss-list a").length);
     $(".detail-infor-content .ss-list a").each((_, el) => {
       res.episodes.push({

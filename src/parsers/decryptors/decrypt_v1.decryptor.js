@@ -2,6 +2,7 @@ import axios from "axios";
 import CryptoJS from "crypto-js";
 import * as cheerio from "cheerio";
 import { v1_base_url } from "../../utils/base_v1.js";
+import { v4_base_url } from "../../utils/base_v4.js";
 import { fallback_1, fallback_2 } from "../../utils/fallback.js";
 
 function fetch_key(data) {
@@ -88,53 +89,17 @@ export async function decryptSources_v1(epID, id, name, type, fallback) {
       );
       decryptedSources = decryptedData;
     } else {
-      // Try kaido.to style endpoint first (without v2)
-      let sourcesData;
-      try {
-        const resp = await axios.get(
-          `https://${v1_base_url}/ajax/episode/sources?id=${id}`,
-          {
-            headers: {
-              "X-Requested-With": "XMLHttpRequest",
-              "Referer": `https://${v1_base_url}/`,
-            },
-          }
-        );
-        sourcesData = resp.data;
-        if (!sourcesData?.link) throw new Error("No link in response");
-      } catch (e) {
-        // Fallback to v2 endpoint
-        const resp = await axios.get(
-          `https://${v1_base_url}/ajax/v2/episode/sources?id=${id}`,
-          {
-            headers: {
-              "X-Requested-With": "XMLHttpRequest",
-              "Referer": `https://${v1_base_url}/`,
-            },
-          }
-        );
-        sourcesData = resp.data;
-      }
+      const { data: sourcesData } = await axios.get(
+        `https://${v1_base_url}/ajax/v2/episode/sources?id=${id}`,
+      );
 
       const ajaxLink = sourcesData?.link;
       if (!ajaxLink) throw new Error("Missing link in sourcesData");
       console.log(ajaxLink);
-      
-      // Extract sourceId and version from link
-      // Format: https://rapid-cloud.co/embed-2/v2/e-1/cQ0c56f8ZDbK?z=
-      const sourceIdMatch = /embed-2\/(v\d+)\/e-1\/([^/?]+)/.exec(ajaxLink);
-      const version = sourceIdMatch?.[1] || "v2";
-      const sourceId = sourceIdMatch?.[2];
-      
-      if (!sourceId) {
-        // Fallback to old format
-        const oldMatch = /\/([^/?]+)\?/.exec(ajaxLink);
-        if (!oldMatch) throw new Error("Unable to extract sourceId from link");
-      }
-      
-      const new_url = `https://megacloud.blog/embed-2/${version}/e-1/${sourceId}?k=1`;
-      console.log("New URL:", new_url);
-      
+      const sourceIdMatch = /\/([^/?]+)\?/.exec(ajaxLink);
+      const sourceId = sourceIdMatch?.[1];
+      if (!sourceId) throw new Error("Unable to extract sourceId from link");
+      const new_url = `https://megacloud.blog/embed-2/v3/e-1/${sourceId}?k=1`;
       const { data: stream_data } = await axios.post(
         "https://megacloud.zenime.site/get-sources",
         {
