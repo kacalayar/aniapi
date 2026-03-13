@@ -1,6 +1,6 @@
 export const BASE_URLS = [
   "kaido.to",         // v1
-  "animekai.to",      // v1 fallback
+  "anikai.to",        // v1 fallback
   "anikototv.to",     // v3
   "9animetv.to"       // v4
 ];
