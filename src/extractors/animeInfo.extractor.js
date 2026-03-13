@@ -59,13 +59,24 @@ async function extractAnimeInfo(id) {
     const animeInfo = {};
     element.each((_, el) => {
       const key = $(el).find(".item-title").text().trim().replace(":", "");
-      const value =
-        key === "Genre" || key === "Studios"
-          ? $(el)
-              .find(".item-content a")
-              .map((_, a) => $(a).text().split(" ").join("-").trim())
-              .get()
-          : $(el).find(".item-content").text().split(" ").join("-").trim();
+      let value;
+      if (key === "Genre") {
+        value = $(el)
+          .find(".item-content a")
+          .map((_, a) => $(a).text().trim())
+          .get();
+      } else if (key === "Studios") {
+        value = $(el)
+          .find(".item-content a")
+          .map((_, a) => $(a).text().trim())
+          .get();
+      } else {
+        value = $(el)
+          .find(".item-content")
+          .text()
+          .replace(/\s+/g, " ")
+          .trim();
+      }
       animeInfo[key] = value;
     });
 
