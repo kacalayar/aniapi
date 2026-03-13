@@ -12,20 +12,6 @@
 
 2.  This `api` is explicitly made for educational purposes only and not for commercial usage. This repo will not be responsible for any misuse of it.
 
-<p align="center">
-      <img
-        src="./public/anya.gif"
-        width="200"
-        height="200"
-      />
-    </p>
-
-# <p align="center">Anime API</p>
-
->
-
-<p align="center">RestFul API made with Node.js <br/>(Checkout this anime streaming website  <a href="https://zenime.site" target="_blank">Zenime</a> powered by this API)</p>
-
 > <h2> Table of Contents </h2>
 
 - [Installation](#installation)
