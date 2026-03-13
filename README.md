@@ -141,5 +141,15 @@ If you discover any issues or have suggestions for improvement, please open an i
 >
 > If you like the project feel free to drop a star. Your appreciation means a lot.
 
+## Star History
+
+<a href="https://www.star-history.com/?repos=kacalayar%2Faniapi&type=date&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/image?repos=kacalayar/aniapi&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/image?repos=kacalayar/aniapi&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/image?repos=kacalayar/aniapi&type=date&legend=top-left" />
+ </picture>
+</a>
+
 <p align="center" style="text-decoration: none;">Made by <a href="https://github.com/kacalayar" target="_blank">kacalayar
 </a></p>
