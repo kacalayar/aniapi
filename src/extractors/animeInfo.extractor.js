@@ -9,7 +9,7 @@ import extractPopularData from "./popular.extractor.js";
 async function extractAnimeInfo(id) {
   try {
     const [resp, characterData] = await Promise.all([
-      axios.get(`https://${v1_base_url}/${id}`),
+      axios.get(`https://${v1_base_url}/watch/${id}`),
       axios.get(
         `https://${v1_base_url}/ajax/character/list/${id.split("-").pop()}`
       ),
