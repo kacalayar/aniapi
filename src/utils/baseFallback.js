@@ -1,16 +1,23 @@
 export const BASE_URLS = [
-  "animekai.to",      // v1
-  "kaido.to",         // v2
+  "kaido.to",         // v1
+  "animekai.to",      // v1 fallback
   "anikototv.to",     // v3
   "9animetv.to"       // v4
 ];
 
-export async function tryWithFallback(requestFn, maxRetries = BASE_URLS.length) {
+export async function tryWithFallback(requestFn, validateResponse, maxRetries = BASE_URLS.length) {
   let lastError = null;
   
   for (let i = 0; i < maxRetries && i < BASE_URLS.length; i++) {
     try {
       const result = await requestFn(BASE_URLS[i]);
+      
+      // Validate response if validator provided
+      if (validateResponse && !validateResponse(result)) {
+        console.log(`Response validation failed for ${BASE_URLS[i]}`);
+        continue;
+      }
+      
       return result;
     } catch (error) {
       lastError = error;

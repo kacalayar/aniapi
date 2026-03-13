@@ -11,6 +11,9 @@ export async function extractServers(id) {
       return await axios.get(
         `https://${baseUrl}/ajax/v2/episode/servers?episodeId=${id}`
       );
+    }, (response) => {
+      // Validate response - check if we got valid HTML
+      return response.data?.html && response.data.html.length > 0;
     });
     
     const $ = cheerio.load(resp.data.html);

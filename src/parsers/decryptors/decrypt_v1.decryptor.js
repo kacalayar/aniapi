@@ -93,6 +93,9 @@ export async function decryptSources_v1(epID, id, name, type, fallback) {
         return await axios.get(
           `https://${baseUrl}/ajax/v2/episode/sources?id=${id}`
         );
+      }, (response) => {
+        // Validate response - check if we got a valid link
+        return response.data?.link && response.data.link.length > 0;
       });
 
       const ajaxLink = sourcesData?.link;
