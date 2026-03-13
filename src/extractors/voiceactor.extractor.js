@@ -72,7 +72,7 @@ export default async function extractVoiceActor(id, page) {
       .get();
     return { totalPages, charactersVoiceActors };
   } catch (error) {
-    console.error("Error in extractVoiceActor:", error);
-    throw new Error("Could not extract voice actors");
+    console.error("Error in extractVoiceActor:", error.message);
+    return { totalPages: 0, charactersVoiceActors: [] };
   }
 }

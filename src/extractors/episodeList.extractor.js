@@ -6,7 +6,7 @@ async function extractEpisodesList(id) {
   try {
     const showId = id.split("-").pop();
     const response = await axios.get(
-      `https://${v1_base_url}/ajax/v2/episode/list/${showId}`,
+      `https://${v1_base_url}/ajax/episode/list/${showId}`,
       {
         headers: {
           "X-Requested-With": "XMLHttpRequest",
@@ -20,13 +20,16 @@ async function extractEpisodesList(id) {
       totalEpisodes: 0,
       episodes: [],
     };
-    res.totalEpisodes = Number($(".detail-infor-content .ss-list a").length);
-    $(".detail-infor-content .ss-list a").each((_, el) => {
+    const episodeElements = $(".episodes-ul a.ep-item");
+    res.totalEpisodes = Number(episodeElements.length);
+    episodeElements.each((_, el) => {
+      const href = $(el)?.attr("href") || "";
+      const epId = href.split("?ep=").pop() || $(el).attr("data-id") || null;
       res.episodes.push({
         episode_no: Number($(el).attr("data-number")),
-        id: $(el)?.attr("href")?.split("/")?.pop() || null,
+        id: href.replace(/^\/+/, "").replace(/^watch\//, "") || null,
         title: $(el)?.attr("title")?.trim() || null,
-        japanese_title: $(el).find(".ep-name").attr("data-jname"),
+        japanese_title: $(el).find(".ep-name").attr("data-jname") || null,
         filler: $(el).hasClass("ssl-item-filler"),
       });
     });

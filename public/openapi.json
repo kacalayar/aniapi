@@ -1,0 +1,1310 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Anime API",
+    "description": "RESTful API for anime information, streaming, and discovery. Built with Node.js and Express.\n\n**Disclaimer:** This API does not store any files. It only links to media hosted on third-party services. Made for educational purposes only.\n\nAll endpoints return responses wrapped in:\n```json\n{ \"success\": true, \"results\": { ... } }\n```\nOn error:\n```json\n{ \"success\": false, \"message\": \"error description\" }\n```",
+    "version": "1.0.0",
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    },
+    "contact": {
+      "name": "GitHub Repository",
+      "url": "https://github.com/kacalayar/aniapi"
+    }
+  },
+  "servers": [
+    {
+      "url": "/",
+      "description": "Current server"
+    }
+  ],
+  "tags": [
+    { "name": "Home", "description": "Homepage data and discovery" },
+    { "name": "Anime", "description": "Anime details, random picks, and quick-tip info" },
+    { "name": "Browse", "description": "Browse by category, genre, filter, and rankings" },
+    { "name": "Search", "description": "Search and autocomplete suggestions" },
+    { "name": "Episodes", "description": "Episode lists and available servers" },
+    { "name": "Streaming", "description": "Stream sources and fallback providers" },
+    { "name": "Schedule", "description": "Airing schedule and next episode times" },
+    { "name": "Characters", "description": "Characters, voice actors, and cast information" },
+    { "name": "Producer", "description": "Anime by producer or studio" },
+    { "name": "Watchlist", "description": "User watchlist" }
+  ],
+  "paths": {
+    "/api": {
+      "get": {
+        "tags": ["Home"],
+        "summary": "Home page info",
+        "description": "Returns all homepage sections: spotlights, trending, top airing, schedule, and more.",
+        "operationId": "getHomeInfo",
+        "responses": {
+          "200": {
+            "description": "Homepage data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "results": {
+                      "type": "object",
+                      "properties": {
+                        "spotlights": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/SpotlightAnime" }
+                        },
+                        "trending": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/TrendingAnime" }
+                        },
+                        "today": {
+                          "type": "object",
+                          "properties": {
+                            "schedule": {
+                              "type": "array",
+                              "items": { "$ref": "#/components/schemas/ScheduleItem" }
+                            }
+                          }
+                        },
+                        "topAiring": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/AnimeCard" }
+                        },
+                        "mostPopular": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/AnimeCard" }
+                        },
+                        "mostFavorite": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/AnimeCard" }
+                        },
+                        "latestCompleted": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/AnimeCard" }
+                        },
+                        "latestEpisode": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/AnimeCard" }
+                        },
+                        "topUpcoming": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/AnimeCard" }
+                        },
+                        "recentlyAdded": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/AnimeCard" }
+                        },
+                        "genres": {
+                          "type": "array",
+                          "items": { "type": "string" },
+                          "example": ["action", "adventure", "comedy"]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/top-ten": {
+      "get": {
+        "tags": ["Browse"],
+        "summary": "Top 10 anime",
+        "description": "Returns top 10 anime rankings grouped by today, this week, and this month.",
+        "operationId": "getTopTen",
+        "responses": {
+          "200": {
+            "description": "Top 10 rankings",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "results": {
+                      "type": "object",
+                      "properties": {
+                        "topTen": {
+                          "type": "object",
+                          "properties": {
+                            "today": { "type": "array", "items": { "$ref": "#/components/schemas/TopTenItem" } },
+                            "week": { "type": "array", "items": { "$ref": "#/components/schemas/TopTenItem" } },
+                            "month": { "type": "array", "items": { "$ref": "#/components/schemas/TopTenItem" } }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/top-search": {
+      "get": {
+        "tags": ["Browse"],
+        "summary": "Top searched anime",
+        "description": "Returns currently most searched anime titles.",
+        "operationId": "getTopSearch",
+        "responses": {
+          "200": {
+            "description": "Top search results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "title": { "type": "string" },
+                          "link": { "type": "string" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/info": {
+      "get": {
+        "tags": ["Anime"],
+        "summary": "Anime details",
+        "description": "Returns full details for a specific anime including metadata, synopsis, seasons, characters, and recommendations.",
+        "operationId": "getAnimeInfo",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "description": "Anime slug identifier (e.g. `frieren-beyond-journeys-end-18542`)",
+            "schema": { "type": "string" },
+            "example": "frieren-beyond-journeys-end-18542"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Anime details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "results": {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/AnimeDetail" },
+                        "seasons": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/Season" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/random": {
+      "get": {
+        "tags": ["Anime"],
+        "summary": "Random anime",
+        "description": "Returns a random anime with full details, related data, and recommendations.",
+        "operationId": "getRandom",
+        "responses": {
+          "200": {
+            "description": "Random anime data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "results": {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/AnimeDetail" },
+                        "related_data": { "type": "array", "items": { "$ref": "#/components/schemas/AnimeCard" } },
+                        "recommended_data": { "type": "array", "items": { "$ref": "#/components/schemas/AnimeCard" } },
+                        "seasons": { "type": "array", "items": { "$ref": "#/components/schemas/Season" } }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/random/id": {
+      "get": {
+        "tags": ["Anime"],
+        "summary": "Random anime ID",
+        "description": "Returns a random anime identifier/slug.",
+        "operationId": "getRandomId",
+        "responses": {
+          "200": {
+            "description": "Random anime ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "results": { "type": "string", "example": "one-piece-100" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/qtip/{id}": {
+      "get": {
+        "tags": ["Anime"],
+        "summary": "Quick-tip popup info",
+        "description": "Returns summary data for hover/tooltip cards.",
+        "operationId": "getQtip",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Anime data_id (numeric)",
+            "schema": { "type": "string" },
+            "example": "3365"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Qtip data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "results": {
+                      "type": "object",
+                      "properties": {
+                        "title": { "type": "string" },
+                        "rating": { "type": "number" },
+                        "quality": { "type": "string" },
+                        "subCount": { "type": "integer" },
+                        "dubCount": { "type": "integer" },
+                        "episodeCount": { "type": "integer" },
+                        "type": { "type": "string" },
+                        "description": { "type": "string" },
+                        "japaneseTitle": { "type": "string" },
+                        "Synonyms": { "type": "string" },
+                        "airedDate": { "type": "string" },
+                        "status": { "type": "string" },
+                        "genres": { "type": "array", "items": { "type": "string" } },
+                        "watchLink": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/{category}": {
+      "get": {
+        "tags": ["Browse"],
+        "summary": "Browse by category",
+        "description": "Returns paginated anime listings for a given category.\n\n**Available categories:**\n- Listings: `top-airing`, `most-popular`, `most-favorite`, `completed`, `recently-updated`, `recently-added`, `top-upcoming`\n- Types: `subbed-anime`, `dubbed-anime`, `movie`, `special`, `ova`, `ona`, `tv`, `music`\n- Genres: `genre/action`, `genre/adventure`, `genre/comedy`, `genre/drama`, `genre/fantasy`, `genre/horror`, `genre/romance`, `genre/sci-fi`, etc.\n- A-Z: `az-list`, `az-list/a` through `az-list/z`, `az-list/0-9`, `az-list/other`",
+        "operationId": "getCategory",
+        "parameters": [
+          {
+            "name": "category",
+            "in": "path",
+            "required": true,
+            "description": "Category slug",
+            "schema": { "type": "string" },
+            "example": "most-popular"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "Page number",
+            "schema": { "type": "integer", "default": 1 },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated anime list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "results": { "$ref": "#/components/schemas/PaginatedAnimeList" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/search": {
+      "get": {
+        "tags": ["Search"],
+        "summary": "Search anime",
+        "description": "Search for anime by keyword with optional filters. Supports foreign language input (auto-converted).",
+        "operationId": "searchAnime",
+        "parameters": [
+          { "name": "keyword", "in": "query", "required": true, "schema": { "type": "string" }, "example": "one punch man" },
+          { "name": "page", "in": "query", "required": false, "schema": { "type": "integer", "default": 1 } },
+          { "name": "type", "in": "query", "required": false, "description": "Anime type (e.g. `1`=Movie, `2`=TV, `3`=OVA, `4`=ONA, `5`=Special, `6`=Music)", "schema": { "type": "string" } },
+          { "name": "status", "in": "query", "required": false, "description": "Status (`1`=Finished, `2`=Currently Airing, `3`=Not Yet Aired)", "schema": { "type": "string" } },
+          { "name": "rated", "in": "query", "required": false, "description": "Rating (`1`=G, `2`=PG, `3`=PG-13, `4`=R, `5`=R+, `6`=Rx)", "schema": { "type": "string" } },
+          { "name": "score", "in": "query", "required": false, "description": "Score filter (1-10)", "schema": { "type": "string" } },
+          { "name": "season", "in": "query", "required": false, "description": "Season (`1`=Spring, `2`=Summer, `3`=Fall, `4`=Winter)", "schema": { "type": "string" } },
+          { "name": "language", "in": "query", "required": false, "description": "Language (`1`=Sub, `2`=Dub, `3`=Chinese)", "schema": { "type": "string" } },
+          { "name": "genres", "in": "query", "required": false, "description": "Comma-separated genre IDs", "schema": { "type": "string" } },
+          { "name": "sort", "in": "query", "required": false, "description": "Sort order (e.g. `default`, `recently_added`, `score`)", "schema": { "type": "string" } },
+          { "name": "sy", "in": "query", "required": false, "description": "Start year", "schema": { "type": "integer" } },
+          { "name": "sm", "in": "query", "required": false, "description": "Start month", "schema": { "type": "integer" } },
+          { "name": "sd", "in": "query", "required": false, "description": "Start day", "schema": { "type": "integer" } },
+          { "name": "ey", "in": "query", "required": false, "description": "End year", "schema": { "type": "integer" } },
+          { "name": "em", "in": "query", "required": false, "description": "End month", "schema": { "type": "integer" } },
+          { "name": "ed", "in": "query", "required": false, "description": "End day", "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "results": {
+                      "type": "object",
+                      "properties": {
+                        "data": { "type": "array", "items": { "$ref": "#/components/schemas/AnimeCard" } },
+                        "totalPage": { "type": "integer" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/filter": {
+      "get": {
+        "tags": ["Search"],
+        "summary": "Filter anime",
+        "description": "Advanced filtering with multiple criteria. Same parameters as search but returns additional pagination metadata.",
+        "operationId": "filterAnime",
+        "parameters": [
+          { "name": "keyword", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "page", "in": "query", "required": false, "schema": { "type": "integer", "default": 1 } },
+          { "name": "type", "in": "query", "required": false, "description": "Anime type (`1`=Movie, `2`=TV, `3`=OVA, `4`=ONA, `5`=Special, `6`=Music)", "schema": { "type": "string" } },
+          { "name": "status", "in": "query", "required": false, "description": "Status (`1`=Finished, `2`=Currently Airing, `3`=Not Yet Aired)", "schema": { "type": "string" } },
+          { "name": "rated", "in": "query", "required": false, "description": "Rating filter", "schema": { "type": "string" } },
+          { "name": "score", "in": "query", "required": false, "description": "Score (1-10)", "schema": { "type": "string" } },
+          { "name": "season", "in": "query", "required": false, "description": "Season filter", "schema": { "type": "string" } },
+          { "name": "language", "in": "query", "required": false, "description": "Language filter", "schema": { "type": "string" } },
+          { "name": "genres", "in": "query", "required": false, "description": "Comma-separated genre IDs", "schema": { "type": "string" } },
+          { "name": "sort", "in": "query", "required": false, "description": "Sort order", "schema": { "type": "string" } },
+          { "name": "sy", "in": "query", "required": false, "schema": { "type": "integer" } },
+          { "name": "sm", "in": "query", "required": false, "schema": { "type": "integer" } },
+          { "name": "sd", "in": "query", "required": false, "schema": { "type": "integer" } },
+          { "name": "ey", "in": "query", "required": false, "schema": { "type": "integer" } },
+          { "name": "em", "in": "query", "required": false, "schema": { "type": "integer" } },
+          { "name": "ed", "in": "query", "required": false, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Filtered results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "results": {
+                      "type": "object",
+                      "properties": {
+                        "data": { "type": "array", "items": { "$ref": "#/components/schemas/AnimeCard" } },
+                        "totalPage": { "type": "integer" },
+                        "currentPage": { "type": "integer" },
+                        "hasNextPage": { "type": "boolean" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/search/suggest": {
+      "get": {
+        "tags": ["Search"],
+        "summary": "Search suggestions",
+        "description": "Returns autocomplete suggestions for a search keyword. Supports foreign language input.",
+        "operationId": "getSuggestions",
+        "parameters": [
+          {
+            "name": "keyword",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" },
+            "example": "demon"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search suggestions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "string" },
+                          "data_id": { "type": "integer" },
+                          "poster": { "type": "string" },
+                          "title": { "type": "string" },
+                          "japanese_title": { "type": "string" },
+                          "releaseDate": { "type": "string" },
+                          "showType": { "type": "string" },
+                          "duration": { "type": "string" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/episodes/{id}": {
+      "get": {
+        "tags": ["Episodes"],
+        "summary": "Episode list",
+        "description": "Returns all episodes for a given anime.",
+        "operationId": "getEpisodes",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Anime slug identifier",
+            "schema": { "type": "string" },
+            "example": "one-piece-100"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Episode list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "results": {
+                      "type": "object",
+                      "properties": {
+                        "totalEpisodes": { "type": "integer" },
+                        "episodes": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/Episode" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/servers/{id}": {
+      "get": {
+        "tags": ["Episodes"],
+        "summary": "Available servers",
+        "description": "Returns available streaming servers for a specific episode.",
+        "operationId": "getServers",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Anime slug (not used directly, but required in route)",
+            "schema": { "type": "string" },
+            "example": "frieren-beyond-journeys-end-18542"
+          },
+          {
+            "name": "ep",
+            "in": "query",
+            "required": true,
+            "description": "Episode data_id",
+            "schema": { "type": "string" },
+            "example": "107257"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Server list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "results": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Server" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/stream": {
+      "get": {
+        "tags": ["Streaming"],
+        "summary": "Stream sources",
+        "description": "Returns streaming source URLs, subtitle tracks, and intro/outro markers for an episode.\n\n**Server names:** `vidstreaming`, `vidcloud`, `douvideo` (legacy names `hd-1` and `hd-2` are also accepted for backward compatibility).\n\n**Type:** `sub` or `dub`.",
+        "operationId": "getStream",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "description": "Anime slug with episode param (must contain `ep=<number>`)",
+            "schema": { "type": "string" },
+            "example": "frieren-beyond-journeys-end-18542?ep=107257"
+          },
+          {
+            "name": "server",
+            "in": "query",
+            "required": true,
+            "description": "Server name: `vidstreaming`, `vidcloud`, `douvideo` (or legacy: `hd-1`, `hd-2`)",
+            "schema": { "type": "string" },
+            "example": "vidstreaming"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": true,
+            "description": "Stream type: `sub` or `dub`",
+            "schema": { "type": "string", "enum": ["sub", "dub"] },
+            "example": "sub"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Stream data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "results": { "$ref": "#/components/schemas/StreamResponse" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/stream/fallback": {
+      "get": {
+        "tags": ["Streaming"],
+        "summary": "Fallback stream sources",
+        "description": "Same as `/api/stream` but uses fallback/backup streaming providers. Use when primary sources are unavailable.",
+        "operationId": "getStreamFallback",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "description": "Anime slug with episode param (must contain `ep=<number>`)",
+            "schema": { "type": "string" },
+            "example": "frieren-beyond-journeys-end-18542?ep=107257"
+          },
+          {
+            "name": "server",
+            "in": "query",
+            "required": true,
+            "description": "Server name",
+            "schema": { "type": "string" },
+            "example": "vidstreaming"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": true,
+            "description": "Stream type: `sub` or `dub`",
+            "schema": { "type": "string", "enum": ["sub", "dub"] },
+            "example": "sub"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Fallback stream data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "results": { "$ref": "#/components/schemas/StreamResponse" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/schedule": {
+      "get": {
+        "tags": ["Schedule"],
+        "summary": "Airing schedule",
+        "description": "Returns the anime airing schedule for a specific date.",
+        "operationId": "getSchedule",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "description": "Date in YYYY-MM-DD format",
+            "schema": { "type": "string", "format": "date" },
+            "example": "2025-03-13"
+          },
+          {
+            "name": "tzOffset",
+            "in": "query",
+            "required": false,
+            "description": "Timezone offset in minutes (default: -330 for IST)",
+            "schema": { "type": "integer", "default": -330 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Schedule data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "results": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/ScheduleItem" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/schedule/{id}": {
+      "get": {
+        "tags": ["Schedule"],
+        "summary": "Next episode schedule",
+        "description": "Returns the scheduled date/time for the next episode of a specific anime.",
+        "operationId": "getNextEpisodeSchedule",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Anime slug identifier",
+            "schema": { "type": "string" },
+            "example": "one-piece-100"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Next episode schedule",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "results": {
+                      "type": "object",
+                      "properties": {
+                        "nextEpisodeSchedule": { "type": "string", "example": "2025-03-15 16:30:00" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/character/list/{id}": {
+      "get": {
+        "tags": ["Characters"],
+        "summary": "Character & voice actor list",
+        "description": "Returns paginated list of characters and their voice actors for a specific anime.",
+        "operationId": "getCharacterList",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Anime slug identifier",
+            "schema": { "type": "string" },
+            "example": "one-piece-100"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 1 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Character list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "results": {
+                      "type": "object",
+                      "properties": {
+                        "currentPage": { "type": "integer" },
+                        "totalPages": { "type": "integer" },
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/CharacterVoiceActor" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/character/{id}": {
+      "get": {
+        "tags": ["Characters"],
+        "summary": "Character details",
+        "description": "Returns detailed information about a specific character including voice actors and animeography.",
+        "operationId": "getCharacterDetail",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Character slug identifier",
+            "schema": { "type": "string" },
+            "example": "asta-340"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Character details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "results": {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": { "type": "string" },
+                              "name": { "type": "string" },
+                              "profile": { "type": "string" },
+                              "japaneseName": { "type": "string" },
+                              "about": {
+                                "type": "object",
+                                "properties": {
+                                  "description": { "type": "string" },
+                                  "style": { "type": "string" }
+                                }
+                              },
+                              "voiceActors": { "type": "array", "items": { "$ref": "#/components/schemas/VoiceActorBrief" } },
+                              "animeography": { "type": "array", "items": { "$ref": "#/components/schemas/AnimeographyItem" } }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/actors/{id}": {
+      "get": {
+        "tags": ["Characters"],
+        "summary": "Voice actor details",
+        "description": "Returns detailed information about a voice actor including their roles.",
+        "operationId": "getActorDetail",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Voice actor slug identifier",
+            "schema": { "type": "string" },
+            "example": "gakuto-kajiwara-534"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Voice actor details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "results": {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": { "type": "string" },
+                              "name": { "type": "string" },
+                              "profile": { "type": "string" },
+                              "japaneseName": { "type": "string" },
+                              "about": {
+                                "type": "object",
+                                "properties": {
+                                  "description": { "type": "string" },
+                                  "style": { "type": "string" }
+                                }
+                              },
+                              "roles": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "anime": {
+                                      "type": "object",
+                                      "properties": {
+                                        "title": { "type": "string" },
+                                        "poster": { "type": "string" },
+                                        "type": { "type": "string" },
+                                        "year": { "type": "string" },
+                                        "id": { "type": "string" }
+                                      }
+                                    },
+                                    "character": {
+                                      "type": "object",
+                                      "properties": {
+                                        "name": { "type": "string" },
+                                        "profile": { "type": "string" },
+                                        "role": { "type": "string" }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/producer/{id}": {
+      "get": {
+        "tags": ["Producer"],
+        "summary": "Anime by producer/studio",
+        "description": "Returns paginated anime list for a specific producer or studio.",
+        "operationId": "getProducer",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Producer slug",
+            "schema": { "type": "string" },
+            "example": "ufotable"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 1 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Producer anime list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "results": { "$ref": "#/components/schemas/PaginatedAnimeList" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/watchlist/{userId}/{page}": {
+      "get": {
+        "tags": ["Watchlist"],
+        "summary": "User watchlist",
+        "description": "Returns paginated watchlist for a specific user.",
+        "operationId": "getWatchlist",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "description": "User identifier",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "page",
+            "in": "path",
+            "required": false,
+            "description": "Page number (default: 1)",
+            "schema": { "type": "integer", "default": 1 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Watchlist data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "results": { "$ref": "#/components/schemas/PaginatedAnimeList" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "SpotlightAnime": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "frieren-beyond-journeys-end-18542" },
+          "data_id": { "type": "integer", "example": 18542 },
+          "poster": { "type": "string" },
+          "title": { "type": "string", "example": "Frieren: Beyond Journey's End" },
+          "japanese_title": { "type": "string" },
+          "description": { "type": "string" },
+          "tvInfo": {
+            "type": "object",
+            "properties": {
+              "showType": { "type": "string", "example": "TV" },
+              "duration": { "type": "string", "example": "24m" },
+              "releaseDate": { "type": "string" },
+              "quality": { "type": "string", "example": "HD" },
+              "episodeInfo": { "type": "object" }
+            }
+          }
+        }
+      },
+      "TrendingAnime": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "data_id": { "type": "integer" },
+          "number": { "type": "integer" },
+          "poster": { "type": "string" },
+          "title": { "type": "string" },
+          "japanese_title": { "type": "string" }
+        }
+      },
+      "AnimeCard": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "data_id": { "type": "integer" },
+          "poster": { "type": "string" },
+          "title": { "type": "string" },
+          "japanese_title": { "type": "string" },
+          "description": { "type": "string" },
+          "tvInfo": {
+            "type": "object",
+            "properties": {
+              "showType": { "type": "string" },
+              "duration": { "type": "string" },
+              "sub": { "type": "integer" },
+              "dub": { "type": "integer" },
+              "eps": { "type": "integer" }
+            }
+          },
+          "adultContent": { "type": "boolean" }
+        }
+      },
+      "AnimeDetail": {
+        "type": "object",
+        "properties": {
+          "adultContent": { "type": "boolean" },
+          "id": { "type": "string" },
+          "data_id": { "type": "integer" },
+          "title": { "type": "string" },
+          "japanese_title": { "type": "string" },
+          "poster": { "type": "string" },
+          "showType": { "type": "string" },
+          "animeInfo": {
+            "type": "object",
+            "properties": {
+              "Overview": { "type": "string" },
+              "Japanese": { "type": "string" },
+              "Synonyms": { "type": "string" },
+              "Aired": { "type": "string" },
+              "Premiered": { "type": "string" },
+              "Duration": { "type": "string" },
+              "Status": { "type": "string" },
+              "MAL Score": { "type": "string" },
+              "Genre": { "type": "array", "items": { "type": "string" } },
+              "Studios": { "type": "string" }
+            }
+          }
+        }
+      },
+      "Season": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "data_number": { "type": "integer" },
+          "data_id": { "type": "integer" },
+          "season": { "type": "string" },
+          "title": { "type": "string" },
+          "japanese_title": { "type": "string" },
+          "season_poster": { "type": "string" }
+        }
+      },
+      "Episode": {
+        "type": "object",
+        "properties": {
+          "episode_no": { "type": "integer" },
+          "id": { "type": "string" },
+          "data_id": { "type": "integer" },
+          "title": { "type": "string" },
+          "japanese_title": { "type": "string" }
+        }
+      },
+      "Server": {
+        "type": "object",
+        "properties": {
+          "type": { "type": "string", "example": "sub" },
+          "data_id": { "type": "string" },
+          "server_id": { "type": "string" },
+          "serverName": { "type": "string", "example": "Vidstreaming" }
+        }
+      },
+      "StreamResponse": {
+        "type": "object",
+        "properties": {
+          "streamingLink": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "type": { "type": "string", "example": "sub" },
+              "link": {
+                "type": "object",
+                "properties": {
+                  "file": { "type": "string", "description": "HLS stream URL (.m3u8)" },
+                  "type": { "type": "string", "example": "hls" }
+                }
+              },
+              "tracks": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "file": { "type": "string" },
+                    "label": { "type": "string", "example": "English" },
+                    "kind": { "type": "string", "example": "captions" },
+                    "default": { "type": "boolean" }
+                  }
+                }
+              },
+              "intro": {
+                "type": "object",
+                "nullable": true,
+                "properties": {
+                  "start": { "type": "integer" },
+                  "end": { "type": "integer" }
+                }
+              },
+              "outro": {
+                "type": "object",
+                "nullable": true,
+                "properties": {
+                  "start": { "type": "integer" },
+                  "end": { "type": "integer" }
+                }
+              },
+              "server": { "type": "string" }
+            }
+          },
+          "servers": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Server" }
+          }
+        }
+      },
+      "ScheduleItem": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "data_id": { "type": "integer" },
+          "title": { "type": "string" },
+          "japanese_title": { "type": "string" },
+          "releaseDate": { "type": "string" },
+          "time": { "type": "string" },
+          "episode_no": { "type": "integer" }
+        }
+      },
+      "TopTenItem": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "data_id": { "type": "integer" },
+          "number": { "type": "integer" },
+          "name": { "type": "string" },
+          "poster": { "type": "string" },
+          "tvInfo": { "type": "object" }
+        }
+      },
+      "PaginatedAnimeList": {
+        "type": "object",
+        "properties": {
+          "totalPages": { "type": "integer" },
+          "data": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/AnimeCard" }
+          }
+        }
+      },
+      "CharacterVoiceActor": {
+        "type": "object",
+        "properties": {
+          "character": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "poster": { "type": "string" },
+              "name": { "type": "string" },
+              "cast": { "type": "string" }
+            }
+          },
+          "voiceActors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "string" },
+                "poster": { "type": "string" },
+                "name": { "type": "string" }
+              }
+            }
+          }
+        }
+      },
+      "VoiceActorBrief": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "profile": { "type": "string" },
+          "language": { "type": "string" },
+          "id": { "type": "string" }
+        }
+      },
+      "AnimeographyItem": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "id": { "type": "string" },
+          "role": { "type": "string" },
+          "type": { "type": "string" },
+          "poster": { "type": "string" }
+        }
+      }
+    }
+  }
+}

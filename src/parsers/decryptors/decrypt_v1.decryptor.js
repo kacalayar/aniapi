@@ -62,7 +62,9 @@ export async function decryptSources_v1(epID, id, name, type, fallback) {
     let iframeURL = null;
 
     if (fallback) {
-      const fallback_server = ["hd-1", "hd-3"].includes(name.toLowerCase())
+      const fallback_server = ["vidstreaming", "douvideo"].includes(
+        name.toLowerCase(),
+      )
         ? fallback_1
         : fallback_2;
 
@@ -90,41 +92,35 @@ export async function decryptSources_v1(epID, id, name, type, fallback) {
       decryptedSources = decryptedData;
     } else {
       const { data: sourcesData } = await axios.get(
-        `https://${v1_base_url}/ajax/v2/episode/sources?id=${id}`,
+        `https://${v1_base_url}/ajax/episode/sources?id=${id}`,
       );
 
       const ajaxLink = sourcesData?.link;
       if (!ajaxLink) throw new Error("Missing link in sourcesData");
-      console.log(ajaxLink);
+
       const sourceIdMatch = /\/([^/?]+)\?/.exec(ajaxLink);
       const sourceId = sourceIdMatch?.[1];
       if (!sourceId) throw new Error("Unable to extract sourceId from link");
-      const new_url = `https://megacloud.blog/embed-2/v3/e-1/${sourceId}?k=1`;
-      const { data: stream_data } = await axios.post(
-        "https://megacloud.zenime.site/get-sources",
-        {
-          embedUrl: new_url,
-        },
+
+      // Extract the base path from the embed link (e.g. https://rapid-cloud.co/embed-2/v2/e-1)
+      const baseUrlMatch = ajaxLink.match(
+        /^(https?:\/\/[^\/]+(?:\/[^\/]+){3})/,
+      );
+      if (!baseUrlMatch) throw new Error("Could not extract base URL");
+      const baseUrl = baseUrlMatch[1];
+
+      iframeURL = `${baseUrl}/${sourceId}?k=1&autoPlay=0&oa=0&asi=1`;
+
+      const { data: rawSourceData } = await axios.get(
+        `${baseUrl}/getSources?id=${sourceId}`,
         {
           headers: {
-            "Content-Type": "application/json",
+            "X-Requested-With": "XMLHttpRequest",
+            Referer: ajaxLink,
           },
         },
       );
-
-      decryptedSources = stream_data;
-      // const baseUrlMatch = ajaxLink.match(
-      //   /^(https?:\/\/[^\/]+(?:\/[^\/]+){3})/,
-      // );
-      // if (!baseUrlMatch) throw new Error("Could not extract base URL");
-      // const baseUrl = baseUrlMatch[1];
-
-      // iframeURL = `${baseUrl}/${sourceId}?k=1&autoPlay=0&oa=0&asi=1`;
-
-      // const { data: rawSourceData } = await axios.get(
-      //   `${baseUrl}/getSources?id=${sourceId}`,
-      // );
-      // decryptedSources = rawSourceData;
+      decryptedSources = rawSourceData;
     }
 
     return {

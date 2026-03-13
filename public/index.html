@@ -96,6 +96,29 @@
         font-size: 1.3rem;
         color: #7cdcfe;
       }
+      .profile-links {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        margin-top: 8px;
+      }
+      .docs-btn {
+        display: inline-block;
+        font-size: 1rem;
+        color: #1e1e1e;
+        background: #7cdcfe;
+        padding: 8px 24px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+        font-weight: 600;
+        transition: background 0.2s;
+      }
+      .docs-btn:hover {
+        background: #5ec4e6;
+        color: #1e1e1e;
+      }
       @media (max-width: 700px) {
         .image-container {
           display: none;
@@ -108,11 +131,14 @@
       <h1>Welcome to API 🎉</h1>
       <div class="profile">
         <img id="pic" src="image.webp" alt="" />
-        <div class="github">
-          <i class="fa fa-github" style="font-size: 36px"></i>
-          <a href="https://github.com/itzzzme/anime-api" target="_blank"
-            >Click here to refer docs</a
-          >
+        <div class="profile-links">
+          <div class="github">
+            <i class="fa fa-github" style="font-size: 36px"></i>
+            <a href="https://github.com/kacalayar/aniapi" target="_blank"
+              >GitHub Repository</a
+            >
+          </div>
+          <a class="docs-btn" href="/docs.html">API Documentation</a>
         </div>
       </div>
       <div class="image-container">
