@@ -100,17 +100,17 @@ The documentation is powered by [Swagger UI](https://swagger.io/tools/swagger-ui
 
 | Endpoint | Description |
 | :--- | :--- |
-| `GET /api` | Homepage data (spotlights, trending, schedules, etc.) |
-| `GET /api/top-ten` | Top 10 anime (today, week, month) |
+| `GET /api` | Homepage data (spotlights, schedules, top anime, etc.) |
+| `GET /api/top-ten` | Top 10 anime (today, week, month) with view counts |
 | `GET /api/top-search` | Currently most searched anime |
 | `GET /api/info?id={slug}` | Full anime details |
 | `GET /api/random` | Random anime with full details |
 | `GET /api/random/id` | Random anime slug |
-| `GET /api/qtip/{id}` | Quick-tip popup data |
+| `GET /api/qtip/{id}` | Quick-tip popup data (type, rating, status, genres, description) |
 | `GET /api/{category}?page={n}` | Browse by category, genre, or A-Z list |
 | `GET /api/producer/{slug}?page={n}` | Anime by producer/studio |
-| `GET /api/search?keyword={text}` | Search anime |
-| `GET /api/filter` | Advanced filter with multiple criteria |
+| `GET /api/search?keyword={text}` | Search anime (enriched with qtip data) |
+| `GET /api/filter` | Advanced filter with multiple criteria (enriched with qtip data) |
 | `GET /api/search/suggest?keyword={text}` | Search autocomplete suggestions |
 | `GET /api/episodes/{slug}` | Episode list for an anime |
 | `GET /api/servers/{slug}?ep={id}` | Available streaming servers |
@@ -118,12 +118,18 @@ The documentation is powered by [Swagger UI](https://swagger.io/tools/swagger-ui
 | `GET /api/stream/fallback?id={slug}?ep={id}&server={name}&type={sub\|dub}` | Fallback stream sources |
 | `GET /api/schedule?date={YYYY-MM-DD}` | Airing schedule for a date |
 | `GET /api/schedule/{slug}` | Next episode schedule |
-| `GET /api/character/list/{slug}?page={n}` | Characters & voice actors for an anime |
 | `GET /api/character/{slug}` | Character details |
 | `GET /api/actors/{slug}` | Voice actor details |
 | `GET /api/watchlist/{userId}/{page}` | User watchlist |
 
+**Available categories:** `ongoing`, `most-popular`, `most-favorite`, `recently-updated`, `recently-added`, `upcoming`, `movie`, `tv`, `special`, `ova`, `ona`, `music`, genres (`genre/action`, etc.), A-Z (`az-list`, `az-list/a`, etc.)
+
 **Available servers for streaming:** `vidstreaming`, `vidcloud`, `douvideo` (legacy: `hd-1`, `hd-2`)
+
+**Notes:**
+- Search and filter results are enriched with qtip data (type, rating, status, genres, description, aired date)
+- Trending section has been removed from the source site; the `trending` field in `/api` returns an empty array
+- Character/voice actor list endpoint (`/api/character/list`) is no longer available on the source site
 
 > ### Pull Requests
 

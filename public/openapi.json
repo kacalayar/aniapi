@@ -36,7 +36,7 @@
       "get": {
         "tags": ["Home"],
         "summary": "Home page info",
-        "description": "Returns all homepage sections: spotlights, trending, top airing, schedule, and more.",
+        "description": "Returns all homepage sections: spotlights, top anime, schedule, and more. Note: the `trending` field currently returns an empty array as the trending section has been removed from the source site.",
         "operationId": "getHomeInfo",
         "responses": {
           "200": {
@@ -56,6 +56,7 @@
                         },
                         "trending": {
                           "type": "array",
+                          "description": "Currently returns empty array (section removed from source site)",
                           "items": { "$ref": "#/components/schemas/TrendingAnime" }
                         },
                         "today": {
@@ -69,6 +70,7 @@
                         },
                         "topAiring": {
                           "type": "array",
+                          "description": "Currently ongoing anime (from /ongoing)",
                           "items": { "$ref": "#/components/schemas/AnimeCard" }
                         },
                         "mostPopular": {
@@ -79,12 +81,9 @@
                           "type": "array",
                           "items": { "$ref": "#/components/schemas/AnimeCard" }
                         },
-                        "latestCompleted": {
-                          "type": "array",
-                          "items": { "$ref": "#/components/schemas/AnimeCard" }
-                        },
                         "latestEpisode": {
                           "type": "array",
+                          "description": "Recently updated anime",
                           "items": { "$ref": "#/components/schemas/AnimeCard" }
                         },
                         "topUpcoming": {
@@ -307,11 +306,11 @@
                       "type": "object",
                       "properties": {
                         "title": { "type": "string" },
-                        "rating": { "type": "number" },
-                        "quality": { "type": "string" },
-                        "subCount": { "type": "integer" },
-                        "dubCount": { "type": "integer" },
-                        "episodeCount": { "type": "integer" },
+                        "rating": { "type": "string", "nullable": true, "example": "8.73" },
+                        "quality": { "type": "string", "nullable": true },
+                        "subCount": { "type": "string", "nullable": true, "example": "SUB" },
+                        "dubCount": { "type": "string", "nullable": true, "example": "DUB" },
+                        "episodeCount": { "type": "string", "nullable": true, "example": "1155" },
                         "type": { "type": "string" },
                         "description": { "type": "string" },
                         "japaneseTitle": { "type": "string" },
@@ -334,7 +333,7 @@
       "get": {
         "tags": ["Browse"],
         "summary": "Browse by category",
-        "description": "Returns paginated anime listings for a given category.\n\n**Available categories:**\n- Listings: `top-airing`, `most-popular`, `most-favorite`, `completed`, `recently-updated`, `recently-added`, `top-upcoming`\n- Types: `subbed-anime`, `dubbed-anime`, `movie`, `special`, `ova`, `ona`, `tv`, `music`\n- Genres: `genre/action`, `genre/adventure`, `genre/comedy`, `genre/drama`, `genre/fantasy`, `genre/horror`, `genre/romance`, `genre/sci-fi`, etc.\n- A-Z: `az-list`, `az-list/a` through `az-list/z`, `az-list/0-9`, `az-list/other`",
+        "description": "Returns paginated anime listings for a given category.\n\n**Available categories:**\n- Listings: `ongoing`, `most-popular`, `most-favorite`, `recently-updated`, `recently-added`, `upcoming`\n- Types: `movie`, `special`, `ova`, `ona`, `tv`, `music`\n- Genres: `genre/action`, `genre/adventure`, `genre/comedy`, `genre/drama`, `genre/fantasy`, `genre/horror`, `genre/romance`, `genre/sci-fi`, etc.\n- A-Z: `az-list`, `az-list/a` through `az-list/z`, `az-list/0-9`, `az-list/other`",
         "operationId": "getCategory",
         "parameters": [
           {
@@ -376,7 +375,7 @@
       "get": {
         "tags": ["Search"],
         "summary": "Search anime",
-        "description": "Search for anime by keyword with optional filters. Supports foreign language input (auto-converted).",
+        "description": "Search for anime by keyword with optional filters. Results are enriched with qtip data (type, rating, status, genres, description, aired date). Supports foreign language input (auto-converted).",
         "operationId": "searchAnime",
         "parameters": [
           { "name": "keyword", "in": "query", "required": true, "schema": { "type": "string" }, "example": "one punch man" },
@@ -405,10 +404,10 @@
                   "type": "object",
                   "properties": {
                     "success": { "type": "boolean", "example": true },
-                    "results": {
+                     "results": {
                       "type": "object",
                       "properties": {
-                        "data": { "type": "array", "items": { "$ref": "#/components/schemas/AnimeCard" } },
+                        "data": { "type": "array", "items": { "$ref": "#/components/schemas/SearchResultCard" } },
                         "totalPage": { "type": "integer" }
                       }
                     }
@@ -424,7 +423,7 @@
       "get": {
         "tags": ["Search"],
         "summary": "Filter anime",
-        "description": "Advanced filtering with multiple criteria. Same parameters as search but returns additional pagination metadata.",
+        "description": "Advanced filtering with multiple criteria. Same parameters as search but returns additional pagination metadata. Results are enriched with qtip data (type, rating, status, genres, description, aired date).",
         "operationId": "filterAnime",
         "parameters": [
           { "name": "keyword", "in": "query", "required": false, "schema": { "type": "string" } },
@@ -456,7 +455,7 @@
                     "results": {
                       "type": "object",
                       "properties": {
-                        "data": { "type": "array", "items": { "$ref": "#/components/schemas/AnimeCard" } },
+                        "data": { "type": "array", "items": { "$ref": "#/components/schemas/SearchResultCard" } },
                         "totalPage": { "type": "integer" },
                         "currentPage": { "type": "integer" },
                         "hasNextPage": { "type": "boolean" }
@@ -793,7 +792,7 @@
       "get": {
         "tags": ["Characters"],
         "summary": "Character & voice actor list",
-        "description": "Returns paginated list of characters and their voice actors for a specific anime.",
+        "description": "Returns paginated list of characters and their voice actors for a specific anime. **Note:** This endpoint currently returns empty data as the source site has removed the underlying AJAX endpoint.",
         "operationId": "getCharacterList",
         "parameters": [
           {
@@ -1067,40 +1066,32 @@
       "SpotlightAnime": {
         "type": "object",
         "properties": {
-          "id": { "type": "string", "example": "frieren-beyond-journeys-end-18542" },
-          "data_id": { "type": "integer", "example": 18542 },
+          "id": { "type": "string", "example": "frieren-beyond-journeys-end-season-2-20409" },
+          "data_id": { "type": "string", "example": "20409" },
           "poster": { "type": "string" },
-          "title": { "type": "string", "example": "Frieren: Beyond Journey's End" },
-          "japanese_title": { "type": "string" },
-          "description": { "type": "string" },
-          "tvInfo": {
-            "type": "object",
-            "properties": {
-              "showType": { "type": "string", "example": "TV" },
-              "duration": { "type": "string", "example": "24m" },
-              "releaseDate": { "type": "string" },
-              "quality": { "type": "string", "example": "HD" },
-              "episodeInfo": { "type": "object" }
-            }
-          }
+          "title": { "type": "string", "example": "Frieren: Beyond Journey's End Season 2" },
+          "japanese_title": { "type": "string", "nullable": true },
+          "description": { "type": "string" }
         }
       },
       "TrendingAnime": {
         "type": "object",
+        "description": "Currently returns empty array (trending section removed from source site)",
         "properties": {
           "id": { "type": "string" },
-          "data_id": { "type": "integer" },
-          "number": { "type": "integer" },
+          "data_id": { "type": "string" },
+          "number": { "type": "string" },
           "poster": { "type": "string" },
           "title": { "type": "string" },
-          "japanese_title": { "type": "string" }
+          "japanese_title": { "type": "string", "nullable": true }
         }
       },
       "AnimeCard": {
         "type": "object",
+        "description": "Anime card from category/browse pages",
         "properties": {
           "id": { "type": "string" },
-          "data_id": { "type": "integer" },
+          "data_id": { "type": "string" },
           "poster": { "type": "string" },
           "title": { "type": "string" },
           "japanese_title": { "type": "string" },
@@ -1108,14 +1099,38 @@
           "tvInfo": {
             "type": "object",
             "properties": {
-              "showType": { "type": "string" },
-              "duration": { "type": "string" },
-              "sub": { "type": "integer" },
-              "dub": { "type": "integer" },
-              "eps": { "type": "integer" }
+              "showType": { "type": "string", "description": "HD, Unknown, or enriched type from qtip" },
+              "sub": { "type": ["integer", "boolean", "null"], "description": "Episode count if available, true if present, null if absent" },
+              "dub": { "type": ["integer", "boolean", "null"], "description": "Episode count if available, true if present, null if absent" },
+              "eps": { "type": "integer", "nullable": true, "description": "Total episode count" }
             }
           },
           "adultContent": { "type": "boolean" }
+        }
+      },
+      "SearchResultCard": {
+        "type": "object",
+        "description": "Enriched search/filter result with qtip data",
+        "properties": {
+          "id": { "type": "string", "example": "one-piece-100" },
+          "data_id": { "type": "string", "example": "100" },
+          "title": { "type": "string" },
+          "japanese_title": { "type": "string", "nullable": true },
+          "poster": { "type": "string" },
+          "description": { "type": "string", "nullable": true, "description": "From qtip enrichment" },
+          "tvInfo": {
+            "type": "object",
+            "properties": {
+              "showType": { "type": "string", "example": "TV Series", "description": "Enriched from qtip (e.g. TV Series, Movie, ONA)" },
+              "rating": { "type": "string", "nullable": true, "example": "8.73", "description": "Score from qtip" },
+              "sub": { "type": ["integer", "boolean", "null"] },
+              "dub": { "type": ["integer", "boolean", "null"] },
+              "eps": { "type": "integer", "nullable": true }
+            }
+          },
+          "status": { "type": "string", "nullable": true, "example": "Currently Airing", "description": "From qtip enrichment" },
+          "genres": { "type": "array", "items": { "type": "string" }, "example": ["Action", "Adventure"], "description": "From qtip enrichment" },
+          "airedDate": { "type": "string", "nullable": true, "example": "Oct 20, 1999 to ?", "description": "From qtip enrichment" }
         }
       },
       "AnimeDetail": {
@@ -1244,11 +1259,12 @@
         "type": "object",
         "properties": {
           "id": { "type": "string" },
-          "data_id": { "type": "integer" },
-          "number": { "type": "integer" },
-          "name": { "type": "string" },
+          "data_id": { "type": "string" },
+          "number": { "type": "string", "description": "Ranking position (1-10)" },
+          "title": { "type": "string" },
+          "japanese_title": { "type": "string", "nullable": true },
           "poster": { "type": "string" },
-          "tvInfo": { "type": "object" }
+          "views": { "type": "string", "nullable": true, "example": "236,268", "description": "View count" }
         }
       },
       "PaginatedAnimeList": {
