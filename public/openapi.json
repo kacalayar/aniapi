@@ -36,7 +36,7 @@
       "get": {
         "tags": ["Home"],
         "summary": "Home page info",
-        "description": "Returns all homepage sections: spotlights, top anime, schedule, and more. Note: the `trending` field currently returns an empty array as the trending section has been removed from the source site.",
+        "description": "Returns all homepage sections: spotlights, top anime, schedule, and more.\n\n**Data sources:**\n- `topAiring`: Currently Airing anime (via /filter + qtip post-filter by status)\n- `latestCompleted`: Finished Airing anime (via /filter + qtip post-filter by status)\n- `topUpcoming`: Not Yet Aired anime (from /upcoming page)\n- `trending`: Currently returns empty array (section removed from source site)\n\n**Status filtering:** The source site's /filter endpoint does not support server-side status filtering. Instead, results are enriched with qtip data and post-filtered by status (`Currently Airing`, `Finished Airing`, `Not yet aired`).",
         "operationId": "getHomeInfo",
         "responses": {
           "200": {
@@ -70,8 +70,8 @@
                         },
                         "topAiring": {
                           "type": "array",
-                          "description": "Currently ongoing anime (from /ongoing)",
-                          "items": { "$ref": "#/components/schemas/AnimeCard" }
+                          "description": "Currently Airing anime (via /filter + qtip post-filter)",
+                          "items": { "$ref": "#/components/schemas/SearchResultCard" }
                         },
                         "mostPopular": {
                           "type": "array",
@@ -86,9 +86,15 @@
                           "description": "Recently updated anime",
                           "items": { "$ref": "#/components/schemas/AnimeCard" }
                         },
+                        "latestCompleted": {
+                          "type": "array",
+                          "description": "Finished Airing anime (via /filter + qtip post-filter)",
+                          "items": { "$ref": "#/components/schemas/SearchResultCard" }
+                        },
                         "topUpcoming": {
                           "type": "array",
-                          "items": { "$ref": "#/components/schemas/AnimeCard" }
+                          "description": "Not Yet Aired anime (from /upcoming page)",
+                          "items": { "$ref": "#/components/schemas/SearchResultCard" }
                         },
                         "recentlyAdded": {
                           "type": "array",
@@ -333,7 +339,7 @@
       "get": {
         "tags": ["Browse"],
         "summary": "Browse by category",
-        "description": "Returns paginated anime listings for a given category.\n\n**Available categories:**\n- Listings: `ongoing`, `most-popular`, `most-favorite`, `recently-updated`, `recently-added`, `upcoming`\n- Types: `movie`, `special`, `ova`, `ona`, `tv`, `music`\n- Genres: `genre/action`, `genre/adventure`, `genre/comedy`, `genre/drama`, `genre/fantasy`, `genre/horror`, `genre/romance`, `genre/sci-fi`, etc.\n- A-Z: `az-list`, `az-list/a` through `az-list/z`, `az-list/0-9`, `az-list/other`",
+        "description": "Returns paginated anime listings for a given category.\n\n**Available categories:**\n- Listings: `top-airing` (Currently Airing), `ongoing` (alias), `most-popular`, `most-favorite`, `completed` (Finished Airing), `recently-updated`, `recently-added`, `top-upcoming` (Not Yet Aired), `upcoming`\n- Types: `movie`, `special`, `ova`, `ona`, `tv`, `music`\n- Genres: `genre/action`, `genre/adventure`, `genre/comedy`, `genre/drama`, `genre/fantasy`, `genre/horror`, `genre/romance`, `genre/sci-fi`, etc.\n- A-Z: `az-list`, `az-list/a` through `az-list/z`, `az-list/0-9`, `az-list/other`\n\n**Note:** `top-airing`, `ongoing`, `completed` are served via /filter + qtip post-filtering by status. `top-upcoming` uses the /upcoming page directly.",
         "operationId": "getCategory",
         "parameters": [
           {
@@ -381,7 +387,7 @@
           { "name": "keyword", "in": "query", "required": true, "schema": { "type": "string" }, "example": "one punch man" },
           { "name": "page", "in": "query", "required": false, "schema": { "type": "integer", "default": 1 } },
           { "name": "type", "in": "query", "required": false, "description": "Anime type (e.g. `1`=Movie, `2`=TV, `3`=OVA, `4`=ONA, `5`=Special, `6`=Music)", "schema": { "type": "string" } },
-          { "name": "status", "in": "query", "required": false, "description": "Status (`1`=Finished, `2`=Currently Airing, `3`=Not Yet Aired)", "schema": { "type": "string" } },
+          { "name": "status", "in": "query", "required": false, "description": "Status (`1`=Finished Airing, `2`=Currently Airing, `3`=Not Yet Aired). Also accepts: `FINISHED`, `AIRING`, `UPCOMING`", "schema": { "type": "string" } },
           { "name": "rated", "in": "query", "required": false, "description": "Rating (`1`=G, `2`=PG, `3`=PG-13, `4`=R, `5`=R+, `6`=Rx)", "schema": { "type": "string" } },
           { "name": "score", "in": "query", "required": false, "description": "Score filter (1-10)", "schema": { "type": "string" } },
           { "name": "season", "in": "query", "required": false, "description": "Season (`1`=Spring, `2`=Summer, `3`=Fall, `4`=Winter)", "schema": { "type": "string" } },
@@ -429,7 +435,7 @@
           { "name": "keyword", "in": "query", "required": false, "schema": { "type": "string" } },
           { "name": "page", "in": "query", "required": false, "schema": { "type": "integer", "default": 1 } },
           { "name": "type", "in": "query", "required": false, "description": "Anime type (`1`=Movie, `2`=TV, `3`=OVA, `4`=ONA, `5`=Special, `6`=Music)", "schema": { "type": "string" } },
-          { "name": "status", "in": "query", "required": false, "description": "Status (`1`=Finished, `2`=Currently Airing, `3`=Not Yet Aired)", "schema": { "type": "string" } },
+          { "name": "status", "in": "query", "required": false, "description": "Status (`1`=Finished Airing, `2`=Currently Airing, `3`=Not Yet Aired). Also accepts: `FINISHED`, `AIRING`, `UPCOMING`", "schema": { "type": "string" } },
           { "name": "rated", "in": "query", "required": false, "description": "Rating filter", "schema": { "type": "string" } },
           { "name": "score", "in": "query", "required": false, "description": "Score (1-10)", "schema": { "type": "string" } },
           { "name": "season", "in": "query", "required": false, "description": "Season filter", "schema": { "type": "string" } },

@@ -4,6 +4,7 @@ import extractPage from "../helper/extractPages.helper.js";
 import extractTopTen from "../extractors/topten.extractor.js";
 import { routeTypes } from "../routes/category.route.js";
 import extractSchedule from "../extractors/schedule.extractor.js";
+import { extractByStatus } from "../helper/filterByStatus.helper.js";
 import { getCachedData, setCachedData } from "../helper/cache.helper.js";
 
 const genres = routeTypes
@@ -22,22 +23,24 @@ export const getHomeInfo = async (req,res) => {
       trending,
       topTen,
       schedule,
-      topAiring,
+      topAiringResult,
       mostPopular,
       mostFavorite,
+      completedResult,
       latestEpisode,
-      topUpcoming,
+      topUpcomingResult,
       recentlyAdded,
     ] = await Promise.all([
       getSpotlights(),
       getTrending(),
       extractTopTen(),
       extractSchedule(new Date().toISOString().split("T")[0]),
-      extractPage(1, "ongoing"),
+      extractByStatus("top-airing", 1),
       extractPage(1, "most-popular"),
       extractPage(1, "most-favorite"),
+      extractByStatus("completed", 1),
       extractPage(1, "recently-updated"),
-      extractPage(1, "upcoming"),
+      extractByStatus("top-upcoming", 1),
       extractPage(1, "recently-added"),
     ]);
     const responseData = {
@@ -45,11 +48,12 @@ export const getHomeInfo = async (req,res) => {
       trending,
       topTen,
       today: { schedule },
-      topAiring: topAiring[0],
+      topAiring: topAiringResult.data,
       mostPopular: mostPopular[0],
       mostFavorite: mostFavorite[0],
+      latestCompleted: completedResult.data,
       latestEpisode: latestEpisode[0],
-      topUpcoming: topUpcoming[0],
+      topUpcoming: topUpcomingResult.data,
       recentlyAdded: recentlyAdded[0],
       genres,
     };

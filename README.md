@@ -122,7 +122,12 @@ The documentation is powered by [Swagger UI](https://swagger.io/tools/swagger-ui
 | `GET /api/actors/{slug}` | Voice actor details |
 | `GET /api/watchlist/{userId}/{page}` | User watchlist |
 
-**Available categories:** `ongoing`, `most-popular`, `most-favorite`, `recently-updated`, `recently-added`, `upcoming`, `movie`, `tv`, `special`, `ova`, `ona`, `music`, genres (`genre/action`, etc.), A-Z (`az-list`, `az-list/a`, etc.)
+**Available categories:** `top-airing` (Currently Airing), `ongoing` (alias for top-airing), `completed` (Finished Airing), `top-upcoming` (Not Yet Aired), `most-popular`, `most-favorite`, `recently-updated`, `recently-added`, `upcoming`, `movie`, `tv`, `special`, `ova`, `ona`, `music`, genres (`genre/action`, etc.), A-Z (`az-list`, `az-list/a`, etc.)
+
+**Note:** `top-airing`, `ongoing`, `completed` are served via the source site's `/filter` endpoint + qtip post-filtering by status. `top-upcoming` uses the `/upcoming` page directly. Status values:
+- `Currently Airing` → `top-airing`, `ongoing`
+- `Finished Airing` → `completed`
+- `Not yet aired` → `top-upcoming` (from `/upcoming`)
 
 **Available servers for streaming:** `vidstreaming`, `vidcloud`, `douvideo` (legacy: `hd-1`, `hd-2`)
 

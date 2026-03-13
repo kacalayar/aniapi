@@ -63,8 +63,11 @@ const FILTER_TYPES = {
 const FILTER_STATUS = {
   ALL: '',
   FINISHED: '1',
+  FINISHED_AIRING: '1',
   CURRENTLY_AIRING: '2',
-  NOT_YET_AIRED: '3'
+  AIRING: '2',
+  NOT_YET_AIRED: '3',
+  UPCOMING: '3'
 };
 
 const FILTER_RATED = {
