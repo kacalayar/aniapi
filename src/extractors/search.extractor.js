@@ -107,16 +107,35 @@ async function extractSearchResults(params = {}) {
 
     const result = [];
     $(elements).each((_, el) => {
-      const id =
+      const href =
         $(el)
           .find(".film-detail .film-name .dynamic-name")
-          ?.attr("href")
-          ?.slice(1)
-          .split("?ref=search")[0] || null;
+          ?.attr("href") || "";
+      const id = href
+        .replace(/^\/watch\//, "")
+        .split("?ref=search")[0] || null;
+
+      // Extract episode info from "Ep 104/104" format
+      const epsText =
+        $(el)
+          .find(".film-poster .tick-eps")
+          ?.text()
+          ?.trim() || "";
+      const epsMatch = epsText.match(/Ep\s*(\d+)(?:\/(\d+))?/);
+      const currentEps = epsMatch ? parseInt(epsMatch[1], 10) : null;
+      const totalEps = epsMatch
+        ? parseInt(epsMatch[2] || epsMatch[1], 10)
+        : null;
+
+      // Sub/Dub are now boolean indicators ("SUB" / "DUB"), not counts
+      const hasSub = !!$(el).find(".film-poster .tick-sub").length;
+      const hasDub = !!$(el).find(".film-poster .tick-dub").length;
+
       result.push({
         id: id,
-        data_id: $(el)
-          .find(".film-poster .film-poster-ahref").attr("data-id"),
+        data_id:
+          $(el).find(".film-poster .film-poster-ahref").attr("data-id") ||
+          (id ? id.split("-").pop() : null),
         title: $(el)
           .find(".film-detail .film-name .dynamic-name")
           ?.text()
@@ -135,41 +154,22 @@ async function extractSearchResults(params = {}) {
           $(el)
             .find(".film-detail .fd-infor .fdi-item.fdi-duration")
             ?.text()
-            ?.trim(),
+            ?.trim() || null,
         tvInfo: {
           showType:
             $(el)
               .find(".film-detail .fd-infor .fdi-item:nth-of-type(1)")
               .text()
-              .trim() || "Unknown",
+              .trim() ||
+            $(el)
+              .find(".film-poster .tick-quality")
+              ?.text()
+              ?.trim() ||
+            "Unknown",
           rating: $(el).find(".film-poster .tick-rate")?.text()?.trim() || null,
-          sub:
-            Number(
-              $(el)
-                .find(".film-poster .tick-sub")
-                ?.text()
-                ?.trim()
-                .split(" ")
-                .pop()
-            ) || null,
-          dub:
-            Number(
-              $(el)
-                .find(".film-poster .tick-dub")
-                ?.text()
-                ?.trim()
-                .split(" ")
-                .pop()
-            ) || null,
-          eps:
-            Number(
-              $(el)
-                .find(".film-poster .tick-eps")
-                ?.text()
-                ?.trim()
-                .split(" ")
-                .pop()
-            ) || null,
+          sub: hasSub ? (totalEps || true) : null,
+          dub: hasDub ? (totalEps || true) : null,
+          eps: totalEps,
         },
       });
     });
