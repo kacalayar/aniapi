@@ -12,43 +12,35 @@ async function extractAnimeInfo(id) {
       axios.get(`https://${v1_base_url}/watch/${id}`),
       axios.get(
         `https://${v1_base_url}/ajax/character/list/${id.split("-").pop()}`
-      ),
+      ).catch(() => ({ data: { html: "" } })),
     ]);
     const characterHtml = characterData.data?.html || "";
     const $1 = cheerio.load(characterHtml);
     const $ = cheerio.load(resp.data);
     const data_id = id.split("-").pop();
-    const titleElement = $("#ani_detail .film-name");
-    const showType = $("#ani_detail .prebreadcrumb ol li")
+    const titleElement = $(".anime-detail .film-name");
+    const showType = $(".prebreadcrumb ol li")
       .eq(1)
       .find("a")
       .text()
       .trim();
-    const posterElement = $("#ani_detail .film-poster");
-    const tvInfoElement = $("#ani_detail .film-stats");
+    const posterElement = $(".anime-detail .film-poster");
     const tvInfo = {};
-    tvInfoElement.find(".tick-item, span.item").each((_, element) => {
+    $(".meta .item").each((_, element) => {
       const el = $(element);
-      const text = el.text().trim();
-      if (el.hasClass("tick-quality")) tvInfo.quality = text;
-      else if (el.hasClass("tick-sub")) tvInfo.sub = text;
-      else if (el.hasClass("tick-dub")) tvInfo.dub = text;
-      else if (el.hasClass("tick-eps")) tvInfo.eps = text;
-      else if (el.hasClass("tick-pg")) tvInfo.rating = text;
-      else if (el.is("span.item")) {
-        if (!tvInfo.showType) tvInfo.showType = text;
-        else if (!tvInfo.duration) tvInfo.duration = text;
-      }
+      const key = el.find(".item-title").text().trim().replace(":", "");
+      const value = el.find(".item-content").text().trim();
+      if (key === "Quality") tvInfo.quality = value;
+      else if (key === "Duration") tvInfo.duration = value;
+      else if (key === "Type") tvInfo.showType = value;
     });
 
-    const element = $(
-      "#ani_detail > .ani_detail-stage > .container > .anis-content > .anisc-info-wrap > .anisc-info > .item"
-    );
-    const overviewElement = $("#ani_detail .film-description .text");
+    const element = $(".meta .item");
+    const overviewElement = $(".film-description .shorting");
 
     const title = titleElement.text().trim();
     const japanese_title = titleElement.attr("data-jname");
-    const synonyms = $('.item.item-title:has(.item-head:contains("Synonyms")) .name').text().trim();
+    const synonyms = $(".alias").text().trim();
     const poster = posterElement.find("img").attr("src");
     const syncDataScript = $("#syncData").html();
     let anilistId = null;
@@ -66,14 +58,14 @@ async function extractAnimeInfo(id) {
 
     const animeInfo = {};
     element.each((_, el) => {
-      const key = $(el).find(".item-head").text().trim().replace(":", "");
+      const key = $(el).find(".item-title").text().trim().replace(":", "");
       const value =
-        key === "Genres" || key === "Producers"
+        key === "Genre" || key === "Studios"
           ? $(el)
-              .find("a")
+              .find(".item-content a")
               .map((_, a) => $(a).text().split(" ").join("-").trim())
               .get()
-          : $(el).find(".name").text().split(" ").join("-").trim();
+          : $(el).find(".item-content").text().split(" ").join("-").trim();
       animeInfo[key] = value;
     });
 
@@ -103,7 +95,7 @@ async function extractAnimeInfo(id) {
     animeInfo["tvInfo"] = tvInfo;
 
     let adultContent = false;
-    const tickRateText = $(".tick-rate", posterElement).text().trim();
+    const tickRateText = $(".tick-rate", ".anime-detail").text().trim();
     if (tickRateText.includes("18+")) {
       adultContent = true;
     }

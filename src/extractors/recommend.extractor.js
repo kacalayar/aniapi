@@ -1,6 +1,6 @@
 export default async function extractRecommendedData($) {
   const recommendedElements = $(
-    "#main-content .block_area_category .tab-content .block_area-content .film_list-wrap .flw-item"
+    "#main-content .block_area .block_area-content .film_list-wrap .flw-item"
   );
   return await Promise.all(
     recommendedElements
@@ -8,9 +8,9 @@ export default async function extractRecommendedData($) {
         const id = $(element)
           .find(".film-detail .film-name a")
           .attr("href")
-          .split("/")
+          ?.split("/")
           .pop();
-        const data_id = $(element).find(".film-poster a").attr("data-id");
+        const data_id = $(element).attr("data-id") || $(element).find(".film-poster a").attr("data-id");
         const title = $(element)
           .find(".film-detail .film-name a")
           .text()
@@ -18,8 +18,8 @@ export default async function extractRecommendedData($) {
         const japanese_title = $(element)
           .find(".film-detail .film-name a")
           .attr("data-jname")
-          .trim();
-        const poster = $(element).find(".film-poster img").attr("data-src");
+          ?.trim();
+        const poster = $(element).find(".film-poster img").attr("data-src") || $(element).find(".film-poster img").attr("src");
         const $fdiItems = $(".film-detail .fd-infor .fdi-item", element);
         const showType = $fdiItems
           .filter((_, item) => {
