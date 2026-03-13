@@ -1,5 +1,6 @@
 import extractFilterResults from "../extractors/filter.extractor.js";
 import extractPage from "./extractPages.helper.js";
+import { v1_base_url } from "../utils/base_v1.js";
 
 /**
  * Status values for qtip post-filtering:
@@ -24,9 +25,10 @@ const STATUS_MAP = {
  * @param {string} statusLabel - One of the STATUS_MAP keys
  * @param {number} page        - Desired page number (virtual)
  * @param {number} perPage     - Items per virtual page (default 24)
+ * @param {string} baseUrl     - Base URL domain to use
  * @returns {Promise<{data: Array, totalPages: number}>}
  */
-export async function extractByStatus(statusLabel, page = 1, perPage = 24) {
+export async function extractByStatus(statusLabel, page = 1, perPage = 24, baseUrl = v1_base_url) {
   const wantedStatus = STATUS_MAP[statusLabel];
   if (!wantedStatus) {
     throw new Error(`Unknown status label: ${statusLabel}`);
@@ -36,7 +38,7 @@ export async function extractByStatus(statusLabel, page = 1, perPage = 24) {
   // and there are very few items (server-side filter doesn't work for this)
   if (statusLabel === "top-upcoming") {
     try {
-      const [data, totalPages] = await extractPage(page, "upcoming");
+      const [data, totalPages] = await extractPage(page, "upcoming", baseUrl);
       return { data, totalPages };
     } catch {
       return { data: [], totalPages: 1 };
@@ -54,7 +56,7 @@ export async function extractByStatus(statusLabel, page = 1, perPage = 24) {
     const [totalPage, items] = await extractFilterResults({
       sort: "default",
       page: upstreamPage,
-    });
+    }, baseUrl);
 
     if (!items || items.length === 0) break;
 

@@ -1,8 +1,9 @@
-import extractTopSearch from "../extractors/topsearch.extractor.js";
+import { getProvider } from "../providers/index.js";
 
-const getTopSearch = async () => {
+const getTopSearch = async (req) => {
   try {
-    const data = await extractTopSearch();
+    const provider = getProvider(req.query?.provider);
+    const data = await provider.topSearch();
     return data;
   } catch (e) {
     console.error(e);

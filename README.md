@@ -19,6 +19,7 @@
 - [Deployment](#deployment)
   - [Vercel](#Vercel)
   - [Render](#Render)
+- [Provider System & Fallback](#provider-system--fallback)
 - [API Documentation](#api-documentation)
 - [API Endpoints Overview](#api-endpoints-overview)
 - [Pull Requests](#pull-requests)
@@ -67,6 +68,39 @@ Host your own instance of anime-api on Render.
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/kacalayar/aniapi)
 
+> # Provider System & Fallback
+
+This API supports multiple anime source providers with automatic fallback. If the primary provider fails (network error, site down, empty response), the system automatically retries with the next available provider.
+
+### Available Providers
+
+| Provider | Domain | Description |
+| :--- | :--- | :--- |
+| `9anime` (default) | `9animetv.to` | Primary provider |
+| `kaido` | `kaido.to` | Fallback provider |
+
+### Usage
+
+Add `?provider=` query parameter to any endpoint to specify which provider to use:
+
+```
+GET /api?provider=kaido
+GET /api/search?keyword=naruto&provider=kaido
+GET /api/info?id=one-piece-100&provider=kaido
+GET /api/episodes/one-piece-100?provider=kaido
+```
+
+If no `provider` parameter is specified, the default provider (`9anime`) is used.
+
+### Automatic Fallback
+
+When a provider fails or returns empty data, the system automatically tries the next provider in the fallback chain:
+
+- **9anime** fails → tries **kaido**
+- **kaido** fails → tries **9anime**
+
+This happens transparently -- no client-side changes needed. The API always tries to return data even if one source is down.
+
 > # API Documentation
 
 Full interactive API documentation is available at:
@@ -107,6 +141,8 @@ The documentation is powered by [Swagger UI](https://swagger.io/tools/swagger-ui
 | `GET /api/character/{slug}` | Character details |
 | `GET /api/actors/{slug}` | Voice actor details |
 | `GET /api/watchlist/{userId}/{page}` | User watchlist |
+
+All endpoints accept an optional `?provider=` query parameter (`9anime`, `kaido`). Default: `9anime`.
 
 **Available categories:** `top-airing` (Currently Airing), `ongoing` (alias for top-airing), `completed` (Finished Airing), `top-upcoming` (Not Yet Aired), `most-popular`, `most-favorite`, `recently-updated`, `recently-added`, `upcoming`, `movie`, `tv`, `special`, `ova`, `ona`, `music`, genres (`genre/action`, etc.), A-Z (`az-list`, `az-list/a`, etc.)
 

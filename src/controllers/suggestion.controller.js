@@ -1,14 +1,12 @@
-import getSuggestion from "../extractors/suggestion.extractor.js";
+import { getProvider } from "../providers/index.js";
 import convertForeignLanguage from "../helper/foreignInput.helper.js";
 
 export const getSuggestions = async (req) => {
   let { keyword } = req.query;
-
-  // Check if the search keyword is in a foreign language and if it can be converted
   keyword = await convertForeignLanguage(keyword);
-
   try {
-    const data = await getSuggestion(encodeURIComponent(keyword));
+    const provider = getProvider(req.query.provider);
+    const data = await provider.suggestion(encodeURIComponent(keyword));
     return data;
   } catch (e) {
     console.error(e);

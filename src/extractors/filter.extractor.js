@@ -14,7 +14,7 @@ import {
   FILTER_SORT,
 } from "../routes/filter.maping.js";
 
-async function extractFilterResults(params = {}) {
+async function extractFilterResults(params = {}, baseUrl = v1_base_url) {
   try {
     const normalizeParam = (param, mapping) => {
       if (!param) return undefined;
@@ -79,10 +79,10 @@ async function extractFilterResults(params = {}) {
 
     const queryParams = new URLSearchParams(filteredParams).toString();
 
-    let apiUrl = `https://${v1_base_url}/filter?${queryParams}`;
+    let apiUrl = `https://${baseUrl}/filter?${queryParams}`;
 
     if (filteredParams.keyword) {
-      apiUrl = `https://${v1_base_url}/search?${queryParams}`;
+      apiUrl = `https://${baseUrl}/search?${queryParams}`;
     }
 
     const resp = await axios.get(apiUrl, {
@@ -157,7 +157,7 @@ async function extractFilterResults(params = {}) {
     const enriched = await Promise.all(
       result.map(async (item) => {
         if (!item.data_id) return item;
-        const qtip = await extractQtip(item.data_id);
+        const qtip = await extractQtip(item.data_id, baseUrl);
         if (!qtip) return item;
         return {
           ...item,

@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Anime API",
-    "description": "RESTful API for anime information, streaming, and discovery. Built with Node.js and Express.\n\n**Disclaimer:** This API does not store any files. It only links to media hosted on third-party services. Made for educational purposes only.\n\nAll endpoints return responses wrapped in:\n```json\n{ \"success\": true, \"results\": { ... } }\n```\nOn error:\n```json\n{ \"success\": false, \"message\": \"error description\" }\n```",
+    "description": "RESTful API for anime information, streaming, and discovery. Built with Node.js and Express.\n\n**Disclaimer:** This API does not store any files. It only links to media hosted on third-party services. Made for educational purposes only.\n\n**Provider System:** All endpoints support a `provider` query parameter to select the data source. Available providers: `9anime` (default, 9animetv.to), `kaido` (kaido.to). If a provider fails, the system automatically falls back to the next available provider.\n\nAll endpoints return responses wrapped in:\n```json\n{ \"success\": true, \"results\": { ... } }\n```\nOn error:\n```json\n{ \"success\": false, \"message\": \"error description\" }\n```",
     "version": "1.0.0",
     "license": {
       "name": "MIT",
@@ -38,6 +38,9 @@
         "summary": "Home page info",
         "description": "Returns all homepage sections: spotlights, top anime, schedule, and more.\n\n**Data sources:**\n- `topAiring`: Currently Airing anime (via /filter + qtip post-filter by status)\n- `latestCompleted`: Finished Airing anime (via /filter + qtip post-filter by status)\n- `topUpcoming`: Not Yet Aired anime (from /upcoming page)\n- `trending`: Currently returns empty array (section removed from source site)\n\n**Status filtering:** The source site's /filter endpoint does not support server-side status filtering. Instead, results are enriched with qtip data and post-filtered by status (`Currently Airing`, `Finished Airing`, `Not yet aired`).",
         "operationId": "getHomeInfo",
+        "parameters": [
+          { "$ref": "#/components/parameters/ProviderParam" }
+        ],
         "responses": {
           "200": {
             "description": "Homepage data",
@@ -121,6 +124,9 @@
         "summary": "Top 10 anime",
         "description": "Returns top 10 anime rankings grouped by today, this week, and this month.",
         "operationId": "getTopTen",
+        "parameters": [
+          { "$ref": "#/components/parameters/ProviderParam" }
+        ],
         "responses": {
           "200": {
             "description": "Top 10 rankings",
@@ -157,6 +163,9 @@
         "summary": "Top searched anime",
         "description": "Returns currently most searched anime titles.",
         "operationId": "getTopSearch",
+        "parameters": [
+          { "$ref": "#/components/parameters/ProviderParam" }
+        ],
         "responses": {
           "200": {
             "description": "Top search results",
@@ -198,7 +207,8 @@
             "description": "Anime slug identifier (e.g. `frieren-beyond-journeys-end-18542`)",
             "schema": { "type": "string" },
             "example": "frieren-beyond-journeys-end-18542"
-          }
+          },
+          { "$ref": "#/components/parameters/ProviderParam" }
         ],
         "responses": {
           "200": {
@@ -233,6 +243,9 @@
         "summary": "Random anime",
         "description": "Returns a random anime with full details, related data, and recommendations.",
         "operationId": "getRandom",
+        "parameters": [
+          { "$ref": "#/components/parameters/ProviderParam" }
+        ],
         "responses": {
           "200": {
             "description": "Random anime data",
@@ -265,6 +278,9 @@
         "summary": "Random anime ID",
         "description": "Returns a random anime identifier/slug.",
         "operationId": "getRandomId",
+        "parameters": [
+          { "$ref": "#/components/parameters/ProviderParam" }
+        ],
         "responses": {
           "200": {
             "description": "Random anime ID",
@@ -297,7 +313,8 @@
             "description": "Anime data_id (numeric)",
             "schema": { "type": "string" },
             "example": "3365"
-          }
+          },
+          { "$ref": "#/components/parameters/ProviderParam" }
         ],
         "responses": {
           "200": {
@@ -357,7 +374,8 @@
             "description": "Page number",
             "schema": { "type": "integer", "default": 1 },
             "example": 1
-          }
+          },
+          { "$ref": "#/components/parameters/ProviderParam" }
         ],
         "responses": {
           "200": {
@@ -399,7 +417,8 @@
           { "name": "sd", "in": "query", "required": false, "description": "Start day", "schema": { "type": "integer" } },
           { "name": "ey", "in": "query", "required": false, "description": "End year", "schema": { "type": "integer" } },
           { "name": "em", "in": "query", "required": false, "description": "End month", "schema": { "type": "integer" } },
-          { "name": "ed", "in": "query", "required": false, "description": "End day", "schema": { "type": "integer" } }
+          { "name": "ed", "in": "query", "required": false, "description": "End day", "schema": { "type": "integer" } },
+          { "$ref": "#/components/parameters/ProviderParam" }
         ],
         "responses": {
           "200": {
@@ -447,7 +466,8 @@
           { "name": "sd", "in": "query", "required": false, "schema": { "type": "integer" } },
           { "name": "ey", "in": "query", "required": false, "schema": { "type": "integer" } },
           { "name": "em", "in": "query", "required": false, "schema": { "type": "integer" } },
-          { "name": "ed", "in": "query", "required": false, "schema": { "type": "integer" } }
+          { "name": "ed", "in": "query", "required": false, "schema": { "type": "integer" } },
+          { "$ref": "#/components/parameters/ProviderParam" }
         ],
         "responses": {
           "200": {
@@ -488,7 +508,8 @@
             "required": true,
             "schema": { "type": "string" },
             "example": "demon"
-          }
+          },
+          { "$ref": "#/components/parameters/ProviderParam" }
         ],
         "responses": {
           "200": {
@@ -537,7 +558,8 @@
             "description": "Anime slug identifier",
             "schema": { "type": "string" },
             "example": "one-piece-100"
-          }
+          },
+          { "$ref": "#/components/parameters/ProviderParam" }
         ],
         "responses": {
           "200": {
@@ -588,7 +610,8 @@
             "description": "Episode data_id",
             "schema": { "type": "string" },
             "example": "107257"
-          }
+          },
+          { "$ref": "#/components/parameters/ProviderParam" }
         ],
         "responses": {
           "200": {
@@ -641,7 +664,8 @@
             "description": "Stream type: `sub` or `dub`",
             "schema": { "type": "string", "enum": ["sub", "dub"] },
             "example": "sub"
-          }
+          },
+          { "$ref": "#/components/parameters/ProviderParam" }
         ],
         "responses": {
           "200": {
@@ -691,7 +715,8 @@
             "description": "Stream type: `sub` or `dub`",
             "schema": { "type": "string", "enum": ["sub", "dub"] },
             "example": "sub"
-          }
+          },
+          { "$ref": "#/components/parameters/ProviderParam" }
         ],
         "responses": {
           "200": {
@@ -732,7 +757,8 @@
             "required": false,
             "description": "Timezone offset in minutes (default: -330 for IST)",
             "schema": { "type": "integer", "default": -330 }
-          }
+          },
+          { "$ref": "#/components/parameters/ProviderParam" }
         ],
         "responses": {
           "200": {
@@ -769,7 +795,8 @@
             "description": "Anime slug identifier",
             "schema": { "type": "string" },
             "example": "one-piece-100"
-          }
+          },
+          { "$ref": "#/components/parameters/ProviderParam" }
         ],
         "responses": {
           "200": {
@@ -814,7 +841,8 @@
             "in": "query",
             "required": false,
             "schema": { "type": "integer", "default": 1 }
-          }
+          },
+          { "$ref": "#/components/parameters/ProviderParam" }
         ],
         "responses": {
           "200": {
@@ -858,7 +886,8 @@
             "description": "Character slug identifier",
             "schema": { "type": "string" },
             "example": "asta-340"
-          }
+          },
+          { "$ref": "#/components/parameters/ProviderParam" }
         ],
         "responses": {
           "200": {
@@ -917,7 +946,8 @@
             "description": "Voice actor slug identifier",
             "schema": { "type": "string" },
             "example": "gakuto-kajiwara-534"
-          }
+          },
+          { "$ref": "#/components/parameters/ProviderParam" }
         ],
         "responses": {
           "200": {
@@ -1006,7 +1036,8 @@
             "in": "query",
             "required": false,
             "schema": { "type": "integer", "default": 1 }
-          }
+          },
+          { "$ref": "#/components/parameters/ProviderParam" }
         ],
         "responses": {
           "200": {
@@ -1046,7 +1077,8 @@
             "required": false,
             "description": "Page number (default: 1)",
             "schema": { "type": "integer", "default": 1 }
-          }
+          },
+          { "$ref": "#/components/parameters/ProviderParam" }
         ],
         "responses": {
           "200": {
@@ -1068,6 +1100,20 @@
     }
   },
   "components": {
+    "parameters": {
+      "ProviderParam": {
+        "name": "provider",
+        "in": "query",
+        "required": false,
+        "description": "Data source provider. If the selected provider fails, the system automatically falls back to the next available one.",
+        "schema": {
+          "type": "string",
+          "enum": ["9anime", "kaido"],
+          "default": "9anime"
+        },
+        "example": "9anime"
+      }
+    },
     "schemas": {
       "SpotlightAnime": {
         "type": "object",

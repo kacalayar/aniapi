@@ -1,10 +1,11 @@
-import extractNextEpisodeSchedule from "../extractors/getNextEpisodeSchedule.extractor.js";
+import { getProvider } from "../providers/index.js";
 
 export const getNextEpisodeSchedule = async (req) => {
   const { id } = req.params;
   try {
-    const nextEpisodeSchedule = await extractNextEpisodeSchedule(id);
-    return { nextEpisodeSchedule: nextEpisodeSchedule };
+    const provider = getProvider(req.query.provider);
+    const nextEpisodeSchedule = await provider.nextEpisodeSchedule(id);
+    return { nextEpisodeSchedule };
   } catch (e) {
     console.error(e);
     return e;

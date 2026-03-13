@@ -2,9 +2,9 @@ import axios from "axios";
 import * as cheerio from "cheerio";
 import { v1_base_url } from "../utils/base_v1.js";
 
-export default async function extractWatchlist(userId, page = 1) {
+export default async function extractWatchlist(userId, page = 1, baseUrl = v1_base_url) {
   try {
-    const url = `https://${v1_base_url}/community/user/${userId}/watch-list?page=${page}`;
+    const url = `https://${baseUrl}/community/user/${userId}/watch-list?page=${page}`;
     const { data } = await axios.get(url);
     const $ = cheerio.load(data);
     const watchlist = [];
@@ -44,7 +44,7 @@ export default async function extractWatchlist(userId, page = 1) {
         type,
         subCount,
         dubCount,
-        link: `https://${v1_base_url}${link}`,
+        link: `https://${baseUrl}${link}`,
         showType: type,
         tvInfo: {
           showType: type,

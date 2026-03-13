@@ -2,10 +2,10 @@ import axios from "axios";
 import * as cheerio from "cheerio";
 import { v1_base_url } from "../utils/base_v1.js";
 
-export default async function extractVoiceActor(id, page) {
+export default async function extractVoiceActor(id, page, baseUrl = v1_base_url) {
   try {
     const resp = await axios.get(
-      `https://${v1_base_url}/ajax/character/list/${id
+      `https://${baseUrl}/ajax/character/list/${id
         .split("-")
         .pop()}?page=${page}`
     );

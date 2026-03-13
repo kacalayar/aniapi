@@ -2,15 +2,15 @@ import axios from "axios";
 import * as cheerio from "cheerio";
 import { v1_base_url } from "../utils/base_v1.js";
 
-async function extractEpisodesList(id) {
+async function extractEpisodesList(id, baseUrl = v1_base_url) {
   try {
     const showId = id.split("-").pop();
     const response = await axios.get(
-      `https://${v1_base_url}/ajax/episode/list/${showId}`,
+      `https://${baseUrl}/ajax/episode/list/${showId}`,
       {
         headers: {
           "X-Requested-With": "XMLHttpRequest",
-          Referer: `https://${v1_base_url}/watch/${id}`,
+          Referer: `https://${baseUrl}/watch/${id}`,
         },
       }
     );

@@ -2,9 +2,9 @@ import axios from "axios";
 import * as cheerio from "cheerio";
 import { v1_base_url } from "../utils/base_v1.js";
 
-export async function extractCharacter(id) {
+export async function extractCharacter(id, baseUrl = v1_base_url) {
   try {
-    const response = await axios.get(`https://${v1_base_url}//character/${id}`);
+    const response = await axios.get(`https://${baseUrl}//character/${id}`);
     const $ = cheerio.load(response.data);
 
     // Extract basic information

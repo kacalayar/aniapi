@@ -1,4 +1,4 @@
-import { extractStreamingInfo } from "../extractors/streamInfo.extractor.js";
+import { getProvider } from "../providers/index.js";
 
 export const getStreamInfo = async (req, res, fallback = false) => {
   try {
@@ -8,7 +8,8 @@ export const getStreamInfo = async (req, res, fallback = false) => {
     const match = input.match(/ep=(\d+)/);
     if (!match) throw new Error("Invalid URL format");
     const finalId = match[1];
-    const streamingInfo = await extractStreamingInfo(finalId, server, type, fallback);
+    const provider = getProvider(req.query.provider);
+    const streamingInfo = await provider.stream(finalId, server, type, fallback);
     return streamingInfo;
   } catch (e) {
     console.error(e);

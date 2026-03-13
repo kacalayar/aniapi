@@ -56,7 +56,7 @@ function fetch_key(data) {
   return key;
 }
 
-export async function decryptSources_v1(epID, id, name, type, fallback) {
+export async function decryptSources_v1(epID, id, name, type, fallback, baseUrl = v1_base_url) {
   try {
     let decryptedSources = null;
     let iframeURL = null;
@@ -92,7 +92,7 @@ export async function decryptSources_v1(epID, id, name, type, fallback) {
       decryptedSources = decryptedData;
     } else {
       const { data: sourcesData } = await axios.get(
-        `https://${v1_base_url}/ajax/episode/sources?id=${id}`,
+        `https://${baseUrl}/ajax/episode/sources?id=${id}`,
       );
 
       const ajaxLink = sourcesData?.link;

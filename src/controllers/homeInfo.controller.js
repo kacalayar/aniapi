@@ -1,23 +1,13 @@
-import getSpotlights from "../extractors/spotlight.extractor.js";
-import getTrending from "../extractors/trending.extractor.js";
-import extractPage from "../helper/extractPages.helper.js";
-import extractTopTen from "../extractors/topten.extractor.js";
+import { getProvider } from "../providers/index.js";
 import { routeTypes } from "../routes/category.route.js";
-import extractSchedule from "../extractors/schedule.extractor.js";
-import { extractByStatus } from "../helper/filterByStatus.helper.js";
-import { getCachedData, setCachedData } from "../helper/cache.helper.js";
 
 const genres = routeTypes
   .slice(0, 41)
   .map((genre) => genre.replace("genre/", ""));
 
-export const getHomeInfo = async (req,res) => {
-  // const cacheKey = "homeInfo";
+export const getHomeInfo = async (req, res) => {
   try {
-    // const cachedResponse = await getCachedData(cacheKey);
-    // if (cachedResponse && Object.keys(cachedResponse).length > 0) {
-    //   return cachedResponse;
-    // }
+    const provider = getProvider(req.query.provider);
     const [
       spotlights,
       trending,
@@ -31,17 +21,17 @@ export const getHomeInfo = async (req,res) => {
       topUpcomingResult,
       recentlyAdded,
     ] = await Promise.all([
-      getSpotlights(),
-      getTrending(),
-      extractTopTen(),
-      extractSchedule(new Date().toISOString().split("T")[0]),
-      extractByStatus("top-airing", 1),
-      extractPage(1, "most-popular"),
-      extractPage(1, "most-favorite"),
-      extractByStatus("completed", 1),
-      extractPage(1, "recently-updated"),
-      extractByStatus("top-upcoming", 1),
-      extractPage(1, "recently-added"),
+      provider.spotlight(),
+      provider.trending(),
+      provider.topTen(),
+      provider.schedule(new Date().toISOString().split("T")[0]),
+      provider.category("top-airing", 1),
+      provider.category("most-popular", 1),
+      provider.category("most-favorite", 1),
+      provider.category("completed", 1),
+      provider.category("recently-updated", 1),
+      provider.category("top-upcoming", 1),
+      provider.category("recently-added", 1),
     ]);
     const responseData = {
       spotlights,
@@ -49,18 +39,14 @@ export const getHomeInfo = async (req,res) => {
       topTen,
       today: { schedule },
       topAiring: topAiringResult.data,
-      mostPopular: mostPopular[0],
-      mostFavorite: mostFavorite[0],
+      mostPopular: mostPopular.data,
+      mostFavorite: mostFavorite.data,
       latestCompleted: completedResult.data,
-      latestEpisode: latestEpisode[0],
+      latestEpisode: latestEpisode.data,
       topUpcoming: topUpcomingResult.data,
-      recentlyAdded: recentlyAdded[0],
+      recentlyAdded: recentlyAdded.data,
       genres,
     };
-
-    // setCachedData(cacheKey, responseData).catch((err) => {
-    //   console.error("Failed to set cache:", err);
-    // });
     return responseData;
   } catch (fetchError) {
     console.error("Error fetching fresh data:", fetchError);

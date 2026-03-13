@@ -9,10 +9,10 @@ const SERVER_NAME_MAP = {
   "hd-2": "vidcloud",
 };
 
-export async function extractServers(id) {
+export async function extractServers(id, baseUrl = v1_base_url) {
   try {
     const resp = await axios.get(
-      `https://${v1_base_url}/ajax/episode/servers?episodeId=${id}`
+      `https://${baseUrl}/ajax/episode/servers?episodeId=${id}`
     );
     const $ = cheerio.load(resp.data.html);
     const serverData = [];
@@ -36,9 +36,9 @@ export async function extractServers(id) {
   }
 }
 
-async function extractStreamingInfo(id, name, type, fallback) {
+async function extractStreamingInfo(id, name, type, fallback, baseUrl = v1_base_url) {
   try {
-    const servers = await extractServers(id.split("?ep=").pop());
+    const servers = await extractServers(id.split("?ep=").pop(), baseUrl);
     // Resolve legacy server names (hd-1 → vidstreaming, hd-2 → vidcloud)
     const resolvedName = (
       SERVER_NAME_MAP[name.toLowerCase()] ?? name
@@ -66,7 +66,8 @@ async function extractStreamingInfo(id, name, type, fallback) {
       requestedServer[0].data_id,
       name,
       type,
-      fallback
+      fallback,
+      baseUrl
     );
     return { streamingLink, servers };
   } catch (error) {

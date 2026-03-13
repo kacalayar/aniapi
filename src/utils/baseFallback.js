@@ -1,29 +1,20 @@
-export const BASE_URLS = [
-  "kaido.to",         // v1
-  "anikai.to",        // v1 fallback
-  "anikototv.to",     // v3
-  "9animetv.to"       // v4
-];
+/**
+ * Base URL configuration for provider fallback.
+ *
+ * This file is kept for reference. The actual fallback logic
+ * is now handled by the provider system in src/providers/index.js.
+ *
+ * Provider fallback order:
+ *   1. 9anime (9animetv.to) - primary
+ *   2. kaido (kaido.to) - fallback
+ *
+ * If the primary provider fails (network error, empty response),
+ * the system automatically tries the next provider.
+ */
 
-export async function tryWithFallback(requestFn, validateResponse, maxRetries = BASE_URLS.length) {
-  let lastError = null;
-  
-  for (let i = 0; i < maxRetries && i < BASE_URLS.length; i++) {
-    try {
-      const result = await requestFn(BASE_URLS[i]);
-      
-      // Validate response if validator provided
-      if (validateResponse && !validateResponse(result)) {
-        console.log(`Response validation failed for ${BASE_URLS[i]}`);
-        continue;
-      }
-      
-      return result;
-    } catch (error) {
-      lastError = error;
-      console.log(`Failed with ${BASE_URLS[i]}, trying next...`);
-    }
-  }
-  
-  throw lastError || new Error("All base URLs failed");
-}
+export const BASE_URLS = [
+  "9animetv.to",    // primary (9anime provider)
+  "kaido.to",       // fallback (kaido provider)
+  "anikai.to",      // potential future provider
+  "anikototv.to",   // potential future provider
+];

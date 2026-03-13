@@ -1,16 +1,16 @@
-import extractVoiceActor from "../extractors/actors.extractor.js";
+import { getProvider } from "../providers/index.js";
 
 const getVoiceActor = async (req, res) => {
   const id = req.params.id;
   try {
-    const voiceActorData = await extractVoiceActor(id);
+    const provider = getProvider(req.query.provider);
+    const voiceActorData = await provider.actor(id);
 
-    // Ensure the data is structured correctly
     if (!voiceActorData || voiceActorData.results.data.length === 0) {
       return res.status(404).json({ error: "No voice actor found." });
     }
 
-    return res.json(voiceActorData); // Return the desired structure
+    return res.json(voiceActorData);
   } catch (e) {
     console.error(e);
     return res.status(500).json({ error: "An error occurred" });

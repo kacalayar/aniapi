@@ -1,16 +1,15 @@
-import extractWatchlist from "../extractors/watchlist.extractor.js";
+import { getProvider } from "../providers/index.js";
 
 export const getWatchlist = async (req, res) => {
   const { userId, page = 1 } = req.params;
-
   try {
-    const { watchlist, totalPages } = await extractWatchlist(userId, page);
-    
-    // Restructuring the response
+    const provider = getProvider(req.query.provider);
+    const { watchlist, totalPages } = await provider.watchlist(userId, page);
+
     return res.json({
       success: true,
       results: {
-        totalPages, // Include total pages in the response
+        totalPages,
         data: watchlist.map(item => ({
           id: item.id,
           data_id: item.data_id,
@@ -23,7 +22,6 @@ export const getWatchlist = async (req, res) => {
             duration: item.tvInfo.duration,
             sub: item.tvInfo.sub,
             dub: item.tvInfo.dub,
-            // Include eps if it exists
             ...(item.tvInfo.eps && { eps: item.tvInfo.eps })
           },
           adultContent: item.adultContent,
@@ -32,9 +30,8 @@ export const getWatchlist = async (req, res) => {
     });
   } catch (error) {
     console.error("Error getting watchlist:", error.message);
-    
     if (!res.headersSent) {
       return res.status(500).json({ error: "An error occurred while fetching the watchlist." });
     }
   }
-}; 
+};

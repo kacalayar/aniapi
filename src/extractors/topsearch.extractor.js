@@ -2,9 +2,9 @@ import axios from "axios";
 import * as cheerio from "cheerio";
 import { v1_base_url } from "../utils/base_v1.js";
 
-async function extractTopSearch() {
+async function extractTopSearch(baseUrl = v1_base_url) {
   try {
-    const { data } = await axios.get(`https://${v1_base_url}`);
+    const { data } = await axios.get(`https://${baseUrl}`);
     const $ = cheerio.load(data);
     const results = [];
     $(".xhashtag a.item").each((_, element) => {

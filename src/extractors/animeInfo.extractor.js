@@ -6,27 +6,34 @@ import extractRecommendedData from "./recommend.extractor.js";
 import extractRelatedData from "./related.extractor.js";
 import extractPopularData from "./popular.extractor.js";
 
-async function extractAnimeInfo(id) {
+async function extractAnimeInfo(id, baseUrl = v1_base_url) {
   try {
     const [resp, characterData] = await Promise.all([
-      axios.get(`https://${v1_base_url}/watch/${id}`),
+      axios.get(`https://${baseUrl}/watch/${id}`),
       axios.get(
-        `https://${v1_base_url}/ajax/character/list/${id.split("-").pop()}`
+        `https://${baseUrl}/ajax/character/list/${id.split("-").pop()}`
       ).catch(() => ({ data: { html: "" } })),
     ]);
     const characterHtml = characterData.data?.html || "";
     const $1 = cheerio.load(characterHtml);
     const $ = cheerio.load(resp.data);
     const data_id = id.split("-").pop();
-    const titleElement = $(".anime-detail .film-name");
+    // 9anime uses .anime-detail, kaido uses .anisc-detail
+    const titleElement = $(".anime-detail .film-name").length
+      ? $(".anime-detail .film-name")
+      : $(".anisc-detail .film-name");
     const showType = $(".prebreadcrumb ol li")
       .eq(1)
       .find("a")
       .text()
       .trim();
-    const posterElement = $(".anime-detail .film-poster");
+    const posterElement = $(".anime-detail .film-poster").length
+      ? $(".anime-detail .film-poster")
+      : $(".anisc-detail .film-poster");
+    // 9anime uses ".meta .item", kaido uses ".anisc-info .item" 
+    const metaSelector = $(".meta .item").length ? ".meta .item" : ".anisc-info .item";
     const tvInfo = {};
-    $(".meta .item").each((_, element) => {
+    $(metaSelector).each((_, element) => {
       const el = $(element);
       const key = el.find(".item-title").text().trim().replace(":", "");
       const value = el.find(".item-content").text().trim();
@@ -35,13 +42,15 @@ async function extractAnimeInfo(id) {
       else if (key === "Type") tvInfo.showType = value;
     });
 
-    const element = $(".meta .item");
-    const overviewElement = $(".film-description .shorting");
+    const element = $(metaSelector);
+    const overviewElement = $(".film-description .shorting").length
+      ? $(".film-description .shorting")
+      : $(".film-description .text");
 
     const title = titleElement.text().trim();
     const japanese_title = titleElement.attr("data-jname");
     const synonyms = $(".alias").text().trim();
-    const poster = posterElement.find("img").attr("src");
+    const poster = posterElement.find("img").attr("src") || $(".film-poster img").first().attr("src") || $(".film-poster-img").first().attr("src");
     const syncDataScript = $("#syncData").html();
     let anilistId = null;
     let malId = null;
@@ -106,7 +115,7 @@ async function extractAnimeInfo(id) {
     animeInfo["tvInfo"] = tvInfo;
 
     let adultContent = false;
-    const tickRateText = $(".tick-rate", ".anime-detail").text().trim();
+    const tickRateText = $(".tick-rate").first().text().trim();
     if (tickRateText.includes("18+")) {
       adultContent = true;
     }

@@ -5,12 +5,12 @@ import { DEFAULT_HEADERS } from "../configs/header.config.js";
 
 const axiosInstance = axios.create({ headers: DEFAULT_HEADERS });
 
-export default async function extractRandom() {
+export default async function extractRandom(baseUrl = v1_base_url) {
   try {
-    const resp = await axiosInstance.get(`https://${v1_base_url}/random`);
+    const resp = await axiosInstance.get(`https://${baseUrl}/random`);
     const redirectedUrl = resp.request.res.responseUrl;
     const id = redirectedUrl.split("/").pop();
-    const animeInfo = await extractAnimeInfo(id);
+    const animeInfo = await extractAnimeInfo(id, baseUrl);
     return animeInfo;
   } catch (error) {
     console.error("Error extracting random anime info:", error);

@@ -1,9 +1,9 @@
 import axios from "axios";
 import { v1_base_url } from "../utils/base_v1.js";
 
-export async function extractSubtitle(id) {
+export async function extractSubtitle(id, baseUrl = v1_base_url) {
   const resp = await axios.get(
-    `https://${v1_base_url}/ajax/episode/sources/?id=${id}`
+    `https://${baseUrl}/ajax/episode/sources/?id=${id}`
   );
 
   const ajaxLink = resp.data?.link;

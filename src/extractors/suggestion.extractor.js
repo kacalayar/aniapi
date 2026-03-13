@@ -2,10 +2,10 @@ import axios from "axios";
 import * as cheerio from "cheerio";
 import { v1_base_url } from "../utils/base_v1.js";
 
-async function getSuggestions(keyword) {
+async function getSuggestions(keyword, baseUrl = v1_base_url) {
   try {
     const resp = await axios.get(
-      `https://${v1_base_url}/ajax/search/suggest?keyword=${keyword}`
+      `https://${baseUrl}/ajax/search/suggest?keyword=${keyword}`
     );
     const $ = cheerio.load(resp.data.html);
     const results = [];

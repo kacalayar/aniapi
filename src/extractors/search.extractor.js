@@ -14,7 +14,7 @@ import {
   FILTER_SORT,
 } from "../routes/filter.maping.js";
 
-async function extractSearchResults(params = {}) {
+async function extractSearchResults(params = {}, baseUrl = v1_base_url) {
   try {
     const normalizeParam = (param, mapping) => {
       if (!param) return undefined;
@@ -79,7 +79,7 @@ async function extractSearchResults(params = {}) {
 
     const queryParams = new URLSearchParams(filteredParams).toString();
 
-    const resp = await axios.get(`https://${v1_base_url}/search?${queryParams}`, {
+    const resp = await axios.get(`https://${baseUrl}/search?${queryParams}`, {
       headers: {
         Accept:
           "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
@@ -114,6 +114,7 @@ async function extractSearchResults(params = {}) {
           ?.attr("href") || "";
       const id = href
         .replace(/^\/watch\//, "")
+        .replace(/^\//, "")
         .split("?ref=search")[0] || null;
 
       // Extract episode info from "Ep 104/104" format
@@ -170,7 +171,7 @@ async function extractSearchResults(params = {}) {
     const enriched = await Promise.all(
       result.map(async (item) => {
         if (!item.data_id) return item;
-        const qtip = await extractQtip(item.data_id);
+        const qtip = await extractQtip(item.data_id, baseUrl);
         if (!qtip) return item;
         return {
           ...item,
