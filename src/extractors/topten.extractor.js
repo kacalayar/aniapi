@@ -17,24 +17,19 @@ async function extractTopTen() {
         .map((index, element) => {
           const number = $(".film-number>span", element).text().trim();
           const title = $(".film-detail>.film-name>a", element).text().trim();
-          const poster = $(".film-poster>img", element).attr("data-src");
+          const poster = $(".film-poster>img", element).attr("data-src") ||
+            $(".film-poster>img", element).attr("src");
           const japanese_title = $(".film-detail>.film-name>a", element)
             .attr("data-jname")
-            .trim();
+            ?.trim() || null;
           const data_id = $(".film-poster", element).attr("data-id");
-          const id = $(".film-detail>.film-name>a", element)
-            .attr("href")
-            .split("/")
-            .pop();
-          const tvInfo = ["sub", "dub", "eps"].reduce((info, property) => {
-            const value = $(`.tick .tick-${property}`, element).text().trim();
-            if (value) {
-              info[property] = value;
-            }
-            return info;
-          }, {});
+          const href = $(".film-detail>.film-name>a", element).attr("href") || "";
+          const id = href.replace(/^\/watch\//, "").replace(/^\//, "");
 
-          return { id, data_id, number, title, japanese_title, poster, tvInfo };
+          // Views count from sidebar
+          const views = $(".fd-infor .fdi-item", element).text().trim().replace(/[^\d,]/g, "") || null;
+
+          return { id, data_id, number, title, japanese_title, poster, views };
         })
         .get();
 

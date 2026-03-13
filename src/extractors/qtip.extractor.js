@@ -14,34 +14,38 @@ export default async function extractQtip(id) {
     );
     const $ = cheerio.load(data);
 
-    const title = $(".pre-qtip-title").text();
-    const rating = $(".pqd-li i.fas.fa-star").parent().text().trim();
-    const quality = $(".tick-item.tick-quality").text();
-    const subCount = $(".tick-item.tick-sub").text().trim();
-    const dubCount = $(".tick-item.tick-dub").text().trim();
-    const episodeCount = $(".tick-item.tick-eps").text().trim();
-    const type = $(".badge.badge-quality").text();
-    const description = $(".pre-qtip-description").text().trim();
-    const japaneseTitle = $(".pre-qtip-line:contains('Japanese:') .stick-text")
-      .text()
-      .trim();
-    const airedDate = $(".pre-qtip-line:contains('Aired:') .stick-text")
-      .text()
-      .trim();
-    const status = $(".pre-qtip-line:contains('Status:') .stick-text")
-      .text()
-      .trim();
-    const Synonyms = $(".pre-qtip-line:contains('Synonyms:') .stick-text")
-      .text()
-      .trim();
-    const genres = [];
-    $(".pre-qtip-line:contains('Genres:') a").each((i, elem) => {
-      genres.push($(elem).text().trim().split(" ").join("-"));
-    });
-    
-    const watchLink = $(".pre-qtip-button a.btn.btn-play").attr("href");
+    const getLineValue = (label) => {
+      const line = $(`.pre-qtip-line:contains('${label}')`);
+      if (!line.length) return "";
+      const clone = line.clone();
+      clone.find(".stick").remove();
+      return clone.text().trim();
+    };
 
-    const extractedData = {
+    const title = $(".pre-qtip-title").text().trim();
+    const rating = getLineValue("Scores") || null;
+    const quality = $(".tick-item.tick-quality").text().trim() || null;
+    const subCount = $(".badge.badge-sub").text().trim() || null;
+    const dubCount = $(".badge.badge-dub").text().trim() || null;
+
+    const epsText = $(".pqd-li").first().text().trim();
+    const episodeCount = epsText.replace(/^Episode\s*/i, "").trim() || null;
+
+    const type = $(".badge.badge-type").text().trim() || null;
+    const description = $(".pre-qtip-description").text().trim();
+    const japaneseTitle = getLineValue("Japanese") || null;
+    const Synonyms = getLineValue("Other names") || null;
+    const airedDate = getLineValue("Date aired") || null;
+    const status = getLineValue("Status") || null;
+
+    const genres = [];
+    $(`.pre-qtip-line:contains('Genre') a`).each((i, elem) => {
+      genres.push($(elem).text().trim());
+    });
+
+    const watchLink = $(".pre-qtip-button a.btn.btn-play").attr("href") || null;
+
+    return {
       title,
       rating,
       quality,
@@ -57,9 +61,8 @@ export default async function extractQtip(id) {
       genres,
       watchLink,
     };
-    return extractedData;
   } catch (error) {
-    console.error("Error extracting data:", error);
-    return error;
+    console.error("Error extracting qtip data:", error.message);
+    return null;
   }
 }

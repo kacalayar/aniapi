@@ -30,15 +30,6 @@ async function extractPage(page, params) {
     const data = await Promise.all(
       $(`${contentSelector} .film_list-wrap .flw-item`).map(
         async (index, element) => {
-          const $fdiItems = $(".film-detail .fd-infor .fdi-item", element);
-          const showType = $fdiItems
-            .filter((_, item) => {
-              const text = $(item).text().trim().toLowerCase();
-              return ["tv", "ona", "movie", "ova", "special", "music"].some((type) =>
-                text.includes(type)
-              );
-            })
-            .first();
           const poster = $(".film-poster>img", element).attr("data-src");
           const title = $(".film-detail .film-name", element).text();
           const japanese_title = $(".film-detail>.film-name>a", element).attr(
@@ -47,14 +38,32 @@ async function extractPage(page, params) {
           const description = $(".film-detail .description", element)
             .text()
             .trim();
-          const data_id = $(".film-poster>a", element).attr("data-id");
-          const id = $(".film-poster>a", element).attr("href").split("/").pop();
+          const data_id = $(element).attr("data-id") ||
+            $(".film-poster>a", element).attr("data-id");
+          const href = $(".film-poster>a", element).attr("href") || "";
+          const id = href.replace(/^\/watch\//, "").replace(/^\//, "").split("?")[0] ||
+            href.split("/").pop();
+
+          // Episode info from "Ep 12/12" or "Ep Full" format
+          const epsText = $(`.tick .tick-eps`, element).text().trim();
+          const epsMatch = epsText.match(/Ep\s*(\d+)(?:\/(\d+))?/);
+          const totalEps = epsMatch
+            ? parseInt(epsMatch[2] || epsMatch[1], 10)
+            : null;
+
+          // Sub/Dub are boolean indicators now
+          const hasSub = !!$(`.tick .tick-sub`, element).length;
+          const hasDub = !!$(`.tick .tick-dub`, element).length;
+
           const tvInfo = {
-            showType: showType ? showType.text().trim() : "Unknown",
-            duration: $(".film-detail .fd-infor .fdi-duration", element)
-              .text()
-              .trim(),
+            showType:
+              $(".film-poster .tick-quality", element).text().trim() ||
+              "Unknown",
+            sub: hasSub ? (totalEps || true) : null,
+            dub: hasDub ? (totalEps || true) : null,
+            eps: totalEps,
           };
+
           let adultContent = false;
           const tickRateText = $(".film-poster>.tick-rate", element)
             .text()
@@ -63,12 +72,6 @@ async function extractPage(page, params) {
             adultContent = true;
           }
 
-          ["sub", "dub", "eps"].forEach((property) => {
-            const value = $(`.tick .tick-${property}`, element).text().trim();
-            if (value) {
-              tvInfo[property] = value;
-            }
-          });
           return {
             id,
             data_id,

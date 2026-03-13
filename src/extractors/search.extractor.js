@@ -2,6 +2,7 @@ import axios from "axios";
 import * as cheerio from "cheerio";
 import { DEFAULT_HEADERS } from "../configs/header.config.js";
 import { v1_base_url } from "../utils/base_v1.js";
+import extractQtip from "./qtip.extractor.js";
 import {
   FILTER_LANGUAGE_MAP,
   GENRE_MAP,
@@ -150,17 +151,8 @@ async function extractSearchResults(params = {}) {
             .find(".film-poster .film-poster-img")
             ?.attr("data-src")
             ?.trim() || null,
-        duration:
-          $(el)
-            .find(".film-detail .fd-infor .fdi-item.fdi-duration")
-            ?.text()
-            ?.trim() || null,
         tvInfo: {
           showType:
-            $(el)
-              .find(".film-detail .fd-infor .fdi-item:nth-of-type(1)")
-              .text()
-              .trim() ||
             $(el)
               .find(".film-poster .tick-quality")
               ?.text()
@@ -174,7 +166,28 @@ async function extractSearchResults(params = {}) {
       });
     });
 
-    return [parseInt(totalPage, 10), result.length > 0 ? result : []];
+    // Enrich results with qtip data (type, status, rating, description, genres)
+    const enriched = await Promise.all(
+      result.map(async (item) => {
+        if (!item.data_id) return item;
+        const qtip = await extractQtip(item.data_id);
+        if (!qtip) return item;
+        return {
+          ...item,
+          description: qtip.description || null,
+          tvInfo: {
+            ...item.tvInfo,
+            showType: qtip.type || item.tvInfo.showType,
+            rating: qtip.rating || item.tvInfo.rating,
+          },
+          status: qtip.status || null,
+          genres: qtip.genres?.length ? qtip.genres : [],
+          airedDate: qtip.airedDate || null,
+        };
+      })
+    );
+
+    return [parseInt(totalPage, 10), enriched.length > 0 ? enriched : []];
   } catch (e) {
     console.error(e);
     return e;

@@ -7,79 +7,33 @@ async function extractSpotlights() {
     const resp = await axios.get(`https://${v1_base_url}/home`);
     const $ = cheerio.load(resp.data);
 
-    const slideElements = $(
-      "div.deslide-wrap > div.container > div#slider > div.swiper-wrapper > div.swiper-slide"
-    );
+    const slideElements = $("div#slider .swiper-wrapper .swiper-slide");
 
     const promises = slideElements
       .map(async (ind, ele) => {
         const poster = $(ele)
-          .find(
-            "div.deslide-item > div.deslide-cover > div.deslide-cover-img > img.film-poster-img"
-          )
+          .find(".deslide-item .deslide-cover .deslide-cover-img img.film-poster-img")
+          .attr("src") ||
+          $(ele)
+          .find(".deslide-item .deslide-cover .deslide-cover-img img.film-poster-img")
           .attr("data-src");
         const title = $(ele)
-          .find(
-            "div.deslide-item > div.deslide-item-content > div.desi-head-title"
-          )
+          .find(".deslide-item .deslide-item-content .desi-head-title")
           .text()
           .trim();
         const japanese_title = $(ele)
-          .find(
-            "div.deslide-item > div.deslide-item-content > div.desi-head-title"
-          )
-          .attr("data-jname")
-          .trim();
+          .find(".deslide-item .deslide-item-content .desi-head-title a")
+          .attr("data-jname")?.trim() || null;
         const description = $(ele)
-          .find(
-            "div.deslide-item > div.deslide-item-content > div.desi-description"
-          )
+          .find(".deslide-item .deslide-item-content .desi-description")
           .text()
           .trim();
-        const id = $(ele)
-          .find(
-            ".deslide-item > .deslide-item-content > .desi-buttons > a:eq(0)"
-          )
-          .attr("href")
-          .split("/")
-          .pop();
-        const data_id = $(ele)
-          .find(
-            ".deslide-item > .deslide-item-content > .desi-buttons > a:eq(0)"
-          )
-          .attr("href")
-          .split("/")
-          .pop()
-          .split("-")
-          .pop();
-        const tvInfoMapping = {
-          0: "showType",
-          1: "duration",
-          2: "releaseDate",
-          3: "quality",
-          4: "episodeInfo",
-        };
+        const href = $(ele)
+          .find(".deslide-item .deslide-item-content .desi-buttons a:eq(0)")
+          .attr("href") || "";
+        const id = href.replace(/^\/watch\//, "").replace(/^\//, "") || null;
+        const data_id = id ? id.split("-").pop() : null;
 
-        const tvInfo = {};
-
-        await Promise.all(
-          $(ele)
-            .find("div.sc-detail > div.scd-item")
-            .map(async (index, element) => {
-              const key = tvInfoMapping[index];
-              let value = $(element).text().trim().replace(/\n/g, "");
-
-              const tickContainer = $(element).find(".tick");
-
-              if (tickContainer.length > 0) {
-                value = {
-                  sub: tickContainer.find(".tick-sub").text().trim(),
-                  dub: tickContainer.find(".tick-dub").text().trim(),
-                };
-              }
-              tvInfo[key] = value;
-            })
-        );
         return {
           id,
           data_id,
@@ -87,7 +41,6 @@ async function extractSpotlights() {
           title,
           japanese_title,
           description,
-          tvInfo,
         };
       })
       .get();

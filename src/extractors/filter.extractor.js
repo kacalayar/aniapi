@@ -2,6 +2,7 @@ import axios from "axios";
 import * as cheerio from "cheerio";
 import { DEFAULT_HEADERS } from "../configs/header.config.js";
 import { v1_base_url } from "../utils/base_v1.js";
+import extractQtip from "./qtip.extractor.js";
 import {
   FILTER_LANGUAGE_MAP,
   GENRE_MAP,
@@ -100,11 +101,24 @@ async function extractFilterResults(params = {}) {
 
     $(elements).each((_, el) => {
       const $el = $(el);
-      const href = $el.find(".film-poster-ahref").attr("href");
-      const data_id = Number($el.find(".film-poster-ahref").attr("data-id"));
+      const href = $el.find(".film-poster-ahref").attr("href") || "";
+      const id = href.replace(/^\/watch\//, "").replace(/^\//,  "") || null;
+      const data_id = $el.find(".film-poster-ahref").attr("data-id") ||
+        (id ? id.split("-").pop() : null);
+
+      // Episode info from "Ep 104/104" or "Ep Full" format
+      const epsText = $el.find(".tick-eps").text().trim();
+      const epsMatch = epsText.match(/Ep\s*(\d+)(?:\/(\d+))?/);
+      const totalEps = epsMatch
+        ? parseInt(epsMatch[2] || epsMatch[1], 10)
+        : null;
+
+      // Sub/Dub are boolean indicators now
+      const hasSub = !!$el.find(".tick-sub").length;
+      const hasDub = !!$el.find(".tick-dub").length;
 
       result.push({
-        id: href ? href.slice(1) : null,
+        id: id,
         data_id: data_id ? `${data_id}` : null,
         poster:
           $el.find(".film-poster .film-poster-img").attr("data-src") ||
@@ -115,30 +129,10 @@ async function extractFilterResults(params = {}) {
           $el.find(".film-name .dynamic-name").attr("data-jname") || null,
         tvInfo: {
           showType:
-            $el.find(".fd-infor .fdi-item:first-child").text().trim() ||
-            "Unknown",
-          duration: $el.find(".fd-infor .fdi-duration").text().trim() || null,
-          sub:
-            Number(
-              $el
-                .find(".tick-sub")
-                .text()
-                .replace(/[^0-9]/g, "")
-            ) || null,
-          dub:
-            Number(
-              $el
-                .find(".tick-dub")
-                .text()
-                .replace(/[^0-9]/g, "")
-            ) || null,
-          eps:
-            Number(
-              $el
-                .find(".tick-eps")
-                .text()
-                .replace(/[^0-9]/g, "")
-            ) || null,
+            $el.find(".tick-quality").text().trim() || "Unknown",
+          sub: hasSub ? (totalEps || true) : null,
+          dub: hasDub ? (totalEps || true) : null,
+          eps: totalEps,
         },
         adultContent: $el.find(".tick-rate").text().trim() || null,
       });
@@ -159,9 +153,30 @@ async function extractFilterResults(params = {}) {
         1
     );
 
+    // Enrich results with qtip data (type, status, rating, description, genres)
+    const enriched = await Promise.all(
+      result.map(async (item) => {
+        if (!item.data_id) return item;
+        const qtip = await extractQtip(item.data_id);
+        if (!qtip) return item;
+        return {
+          ...item,
+          description: qtip.description || null,
+          tvInfo: {
+            ...item.tvInfo,
+            showType: qtip.type || item.tvInfo.showType,
+            rating: qtip.rating || null,
+          },
+          status: qtip.status || null,
+          genres: qtip.genres?.length ? qtip.genres : [],
+          airedDate: qtip.airedDate || null,
+        };
+      })
+    );
+
     return [
       parseInt(totalPage, 10),
-      result.length > 0 ? result : [],
+      enriched.length > 0 ? enriched : [],
       parseInt(params.page, 10) || 1,
       parseInt(params.page, 10) < parseInt(totalPage, 10),
     ];

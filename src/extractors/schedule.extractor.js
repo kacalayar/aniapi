@@ -17,7 +17,8 @@ export default async function extractSchedule(date, tzOffset) {
         ?.find("a")
         .attr("href")
         .split("?")[0]
-        .replace("/", "");
+        .replace(/^\/watch\//, "")
+        .replace(/^\//, "");
       const data_id = id?.split("-").pop();
       const title = $(element).find(".film-name").text().trim();
       const japanese_title = $(element)
