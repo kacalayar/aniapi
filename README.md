@@ -146,6 +146,12 @@ All endpoints accept an optional `?provider=` query parameter (`9anime`, `kaido`
 
 **Available categories:** `top-airing` (Currently Airing), `ongoing` (alias for top-airing), `completed` (Finished Airing), `top-upcoming` (Not Yet Aired), `most-popular`, `most-favorite`, `recently-updated`, `recently-added`, `upcoming`, `movie`, `tv`, `special`, `ova`, `ona`, `music`, genres (`genre/action`, etc.), A-Z (`az-list`, `az-list/a`, etc.)
 
+**Pagination:** browse endpoints support full upstream pagination wherever the source site exposes multiple pages. This includes category pages, genre pages, A-Z listings, and producer pages. Use the `page` query parameter:
+- `GET /api/genre/action?page=2`
+- `GET /api/most-popular?page=3`
+- `GET /api/az-list/a?page=4`
+- `GET /api/producer/toei-animation?page=2`
+
 **Note:** `top-airing`, `ongoing`, `completed` are served via the source site's `/filter` endpoint + qtip post-filtering by status. `top-upcoming` uses the `/upcoming` page directly. Status values:
 - `Currently Airing` → `top-airing`, `ongoing`
 - `Finished Airing` → `completed`

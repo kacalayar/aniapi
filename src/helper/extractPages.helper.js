@@ -11,17 +11,31 @@ async function extractPage(page, params, baseUrl = v1_base_url) {
     const $ = cheerio.load(resp.data);
     const totalPages =
       Number(
+        // New pagination format: "of 100"
+        $(".anime-pagination .ap__-input .btn.btn-sm.btn-blank")
+          .last()
+          ?.text()
+          ?.trim()
+          ?.match(/of\s+(\d+)/i)?.[1] ??
+        // Older format: last page link
         $('.pre-pagination nav .pagination > .page-item a[title="Last"]')
           ?.attr("href")
           ?.split("=")
           .pop() ??
-          $('.pre-pagination nav .pagination > .page-item a[title="Next"]')
-            ?.attr("href")
-            ?.split("=")
-            .pop() ??
-          $(".pre-pagination nav .pagination > .page-item.active a")
-            ?.text()
-            ?.trim()
+        // Older format: next page link
+        $('.pre-pagination nav .pagination > .page-item a[title="Next"]')
+          ?.attr("href")
+          ?.split("=")
+          .pop() ??
+        // Older format: active page
+        $(".pre-pagination nav .pagination > .page-item.active a")
+          ?.text()
+          ?.trim() ??
+        // New format fallback: next link page number
+        $(".anime-pagination .ap__-btn-next a")
+          ?.attr("href")
+          ?.split("=")
+          .pop()
       ) || 1;
       
     const contentSelector = params.includes("az-list")

@@ -356,7 +356,7 @@
       "get": {
         "tags": ["Browse"],
         "summary": "Browse by category",
-        "description": "Returns paginated anime listings for a given category.\n\n**Available categories:**\n- Listings: `top-airing` (Currently Airing), `ongoing` (alias), `most-popular`, `most-favorite`, `completed` (Finished Airing), `recently-updated`, `recently-added`, `top-upcoming` (Not Yet Aired), `upcoming`\n- Types: `movie`, `special`, `ova`, `ona`, `tv`, `music`\n- Genres: `genre/action`, `genre/adventure`, `genre/comedy`, `genre/drama`, `genre/fantasy`, `genre/horror`, `genre/romance`, `genre/sci-fi`, etc.\n- A-Z: `az-list`, `az-list/a` through `az-list/z`, `az-list/0-9`, `az-list/other`\n\n**Note:** `top-airing`, `ongoing`, `completed` are served via /filter + qtip post-filtering by status. `top-upcoming` uses the /upcoming page directly.",
+        "description": "Returns paginated anime listings for a given category.\n\n**Available categories:**\n- Listings: `top-airing` (Currently Airing), `ongoing` (alias), `most-popular`, `most-favorite`, `completed` (Finished Airing), `recently-updated`, `recently-added`, `top-upcoming` (Not Yet Aired), `upcoming`\n- Types: `movie`, `special`, `ova`, `ona`, `tv`, `music`\n- Genres: `genre/action`, `genre/adventure`, `genre/comedy`, `genre/drama`, `genre/fantasy`, `genre/horror`, `genre/romance`, `genre/sci-fi`, etc.\n- A-Z: `az-list`, `az-list/a` through `az-list/z`, `az-list/0-9`, `az-list/other`\n\n**Pagination:** Supports full upstream pagination wherever the source site provides multiple pages. This includes category pages, genre pages, A-Z listings, and producer pages. Use the `page` query parameter to navigate all available pages.\n\n**Note:** `top-airing`, `ongoing`, `completed` are served via /filter + qtip post-filtering by status. `top-upcoming` uses the /upcoming page directly.",
         "operationId": "getCategory",
         "parameters": [
           {
@@ -371,7 +371,7 @@
             "name": "page",
             "in": "query",
             "required": false,
-            "description": "Page number",
+            "description": "Page number. Supports full upstream pagination for browse, genre, and A-Z routes.",
             "schema": { "type": "integer", "default": 1 },
             "example": 1
           },
@@ -1020,7 +1020,7 @@
       "get": {
         "tags": ["Producer"],
         "summary": "Anime by producer/studio",
-        "description": "Returns paginated anime list for a specific producer or studio.",
+        "description": "Returns paginated anime list for a specific producer or studio. Supports full upstream pagination wherever multiple pages are available.",
         "operationId": "getProducer",
         "parameters": [
           {
@@ -1035,6 +1035,7 @@
             "name": "page",
             "in": "query",
             "required": false,
+            "description": "Page number. Supports full upstream pagination for producer listings.",
             "schema": { "type": "integer", "default": 1 }
           },
           { "$ref": "#/components/parameters/ProviderParam" }
